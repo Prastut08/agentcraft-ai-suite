@@ -47,7 +47,7 @@ function AppLayout() {
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={item.to as string as "/app/dashboard"}
                 className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
                   active
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
