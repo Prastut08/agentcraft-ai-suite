@@ -156,7 +156,7 @@ function RegisterPage() {
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 Already have an account?{" "}
-                <Link to="/auth/login" className="font-medium text-primary hover:underline">
+                <Link to="/auth/register" className="font-medium text-primary hover:underline">
                   Sign in
                 </Link>
               </p>

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ const transcript = [
   { s: "Aria",  t: "Great, looking forward to seeing you Thursday. Have a wonderful day!" },
 ];
 
-const sentimentIcon: Record<string, JSX.Element> = {
+const sentimentIcon: Record<string, ReactNode> = {
   pos: <Smile className="h-4 w-4 text-success" />,
   neu: <Meh  className="h-4 w-4 text-muted-foreground" />,
   neg: <Frown className="h-4 w-4 text-destructive" />,

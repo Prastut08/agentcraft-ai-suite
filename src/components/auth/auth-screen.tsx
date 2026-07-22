@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, Loader2, Lock, Shield, Waves } from "lucide-react";
+import { ArrowRight, Check, Loader2, Lock, Shield, Sparkles, Waves } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { type AuthMode, signInWithEmail, signUpWithEmail, useFirebaseAuth } from "@/lib/firebase-auth";
+import { type AuthMode, signInAsGuest, signInWithEmail, signUpWithEmail, useFirebaseAuth } from "@/lib/firebase-auth";
 
 type AuthScreenProps = {
   compact?: boolean;
@@ -60,6 +60,20 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
       navigate({ to: "/app/dashboard", replace: true });
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unable to continue with this account.";
+      setError(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDemoAccess() {
+    setBusy(true);
+    setError(null);
+    try {
+      await signInAsGuest();
+      navigate({ to: "/app/dashboard", replace: true });
+    } catch (demoError) {
+      const message = demoError instanceof Error ? demoError.message : "Unable to start demo session.";
       setError(message);
     } finally {
       setBusy(false);
@@ -194,6 +208,11 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
+                </Button>
+
+                <Button type="button" variant="outline" className="h-11 w-full" onClick={handleDemoAccess} disabled={busy}>
+                  <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                  Instant Demo Access
                 </Button>
               </form>
             </Tabs>

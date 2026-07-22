@@ -29,19 +29,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const unsubscribe = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
-      const data = snapshot.data() as DocumentData | undefined;
-      setProfile({
-        displayName: typeof data?.displayName === "string" && data.displayName.trim().length > 0
-          ? data.displayName
-          : user.displayName ?? user.email ?? "Workspace user",
-        businessName: typeof data?.businessName === "string" && data.businessName.trim().length > 0
-          ? data.businessName
-          : typeof data?.displayName === "string" && data.displayName.trim().length > 0
-          ? data.displayName
-          : user.displayName ?? user.email ?? "Workspace",
-      });
-    });
+    const unsubscribe = onSnapshot(
+      doc(db, "users", user.uid),
+      (snapshot) => {
+        const data = snapshot.data() as DocumentData | undefined;
+        setProfile({
+          displayName: typeof data?.displayName === "string" && data.displayName.trim().length > 0
+            ? data.displayName
+            : user.displayName ?? user.email ?? "Workspace user",
+          businessName: typeof data?.businessName === "string" && data.businessName.trim().length > 0
+            ? data.businessName
+            : typeof data?.displayName === "string" && data.displayName.trim().length > 0
+            ? data.displayName
+            : user.displayName ?? user.email ?? "Workspace",
+        });
+      },
+      (error) => {
+        console.warn("Firestore profile read failed, using auth fallback profile:", error);
+        setProfile({
+          displayName: user.displayName ?? user.email ?? "Workspace user",
+          businessName: user.displayName ?? user.email ?? "Workspace",
+        });
+      }
+    );
 
     return unsubscribe;
   }, [user]);

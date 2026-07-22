@@ -3,6 +3,7 @@ import type { User } from "firebase/auth";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -19,10 +20,18 @@ export function useFirebaseAuth() {
 
   useEffect(
     () =>
-      onAuthStateChanged(auth, (nextUser) => {
-        setUser(nextUser);
-        setLoading(false);
-      }),
+      onAuthStateChanged(
+        auth,
+        (nextUser) => {
+          setUser(nextUser);
+          setLoading(false);
+        },
+        (error) => {
+          console.warn("Firebase Auth state change error:", error);
+          setUser(null);
+          setLoading(false);
+        }
+      ),
     [],
   );
 
@@ -51,6 +60,25 @@ export async function signUpWithEmail(email: string, password: string, displayNa
     },
     { merge: true },
   );
+
+  return credential;
+}
+
+export async function signInAsGuest() {
+  const credential = await signInAnonymously(auth);
+  await updateProfile(credential.user, { displayName: "Demo User" });
+  await setDoc(
+    doc(db, "users", credential.user.uid),
+    {
+      uid: credential.user.uid,
+      email: "demo@voiceforge.ai",
+      displayName: "Demo User",
+      businessName: "Demo Workspace",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  ).catch((err) => console.warn("Firestore guest profile write warning:", err));
 
   return credential;
 }
