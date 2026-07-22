@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,11 @@ import {
   Play, Star, Globe,
 } from "lucide-react";
 import { toast } from "sonner";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { onSnapshot, type DocumentData } from "firebase/firestore";
+
+import { useAuth } from "@/lib/auth-context";
+import { db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/app/create")({
   component: CreateWizard,
@@ -61,7 +66,36 @@ const voices = [
 
 const tones = ["Friendly","Professional","Luxury","Formal","Casual","Empathetic","Energetic","Calm","Sales Focused"];
 
+type BusinessInfo = {
+  businessName: string;
+  industry: string;
+  website: string;
+  phoneNumber: string;
+  email: string;
+  timeZone: string;
+  businessHours: string;
+  languagesSpoken: string;
+  businessDescription: string;
+  address: string;
+};
+
+function normalizeBusinessInfo(info: Partial<BusinessInfo>): Partial<BusinessInfo> {
+  return {
+    businessName: typeof info.businessName === "string" ? info.businessName : "",
+    industry: typeof info.industry === "string" ? info.industry : "",
+    website: typeof info.website === "string" ? info.website : "",
+    phoneNumber: typeof info.phoneNumber === "string" ? info.phoneNumber : "",
+    email: typeof info.email === "string" ? info.email : "",
+    timeZone: typeof info.timeZone === "string" ? info.timeZone : "pst",
+    businessHours: typeof info.businessHours === "string" ? info.businessHours : "",
+    languagesSpoken: typeof info.languagesSpoken === "string" ? info.languagesSpoken : "",
+    businessDescription: typeof info.businessDescription === "string" ? info.businessDescription : "",
+    address: typeof info.address === "string" ? info.address : "",
+  };
+}
+
 function CreateWizard() {
+  const { user, profile } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(["AI Receptionist"]);
   const [selectedResp, setSelectedResp] = useState<string[]>(["Answer Calls", "Book Appointments"]);
@@ -69,14 +103,252 @@ function CreateWizard() {
   const [voice, setVoice] = useState("Aria");
   const [humor, setHumor] = useState([30]);
   const [empathy, setEmpathy] = useState([70]);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [savingBusinessInfo, setSavingBusinessInfo] = useState(false);
+  const hydratedDraftRef = useRef(false);
+  const initialBusinessInfo = {
+    businessName: "",
+    industry: "",
+    website: "",
+    phoneNumber: "",
+    email: "",
+    timeZone: "pst",
+    businessHours: "",
+    languagesSpoken: "",
+    businessDescription: "",
+    address: "",
+  };
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo>(initialBusinessInfo);
+  const businessInfoRef = useRef<BusinessInfo>(initialBusinessInfo);
 
   const progress = (step / 10) * 100;
 
+  const businessName = businessInfo.businessName.trim() || "Bright Dental";
+  const businessDescription = businessInfo.businessDescription.trim() || "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
   const next = () => setStep((s) => Math.min(10, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
+
+  useEffect(() => {
+    if (businessInfo.businessName.trim().length === 0 && profile?.businessName) {
+      const nextBusinessInfo = {
+        ...businessInfoRef.current,
+        businessName: profile.businessName,
+      };
+      businessInfoRef.current = nextBusinessInfo;
+      setBusinessInfo((current) => ({
+        ...current,
+        businessName: profile.businessName,
+      }));
+    }
+  }, [profile?.businessName, businessInfo.businessName]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const draftRef = doc(db, "users", user.uid, "createAgentDrafts", "current");
+    const unsubscribe = onSnapshot(draftRef, (snapshot) => {
+      const data = snapshot.data() as DocumentData | undefined;
+      if (!data) {
+        hydratedDraftRef.current = true;
+        return;
+      }
+
+      if (typeof data.step === "number") {
+        setStep(data.step);
+      }
+
+      if (data.businessInfo && typeof data.businessInfo === "object") {
+        setBusinessInfo((current) => {
+          const nextBusinessInfo = {
+          ...current,
+          ...normalizeBusinessInfo(data.businessInfo as Partial<BusinessInfo>),
+          };
+          businessInfoRef.current = nextBusinessInfo;
+          return nextBusinessInfo;
+        });
+      }
+
+      if (Array.isArray(data.agentType)) {
+        setSelectedTypes(data.agentType.filter((item): item is string => typeof item === "string"));
+      }
+
+      if (Array.isArray(data.responsibilities)) {
+        setSelectedResp(data.responsibilities.filter((item): item is string => typeof item === "string"));
+      }
+
+      if (typeof data.personality?.tone === "string") {
+        setTone(data.personality.tone);
+      }
+
+      if (typeof data.personality?.voice === "string") {
+        setVoice(data.personality.voice);
+      }
+
+      if (typeof data.personality?.humor === "number") {
+        setHumor([data.personality.humor]);
+      }
+
+      if (typeof data.personality?.empathy === "number") {
+        setEmpathy([data.personality.empathy]);
+      }
+
+      hydratedDraftRef.current = true;
+    });
+
+    return unsubscribe;
+  }, [user]);
+
+  const saveBusinessInfo = useCallback(async (nextBusinessInfo: BusinessInfo = businessInfoRef.current) => {
+    if (!user) {
+      return;
+    }
+
+    const nextBusinessName = nextBusinessInfo.businessName.trim() || "Bright Dental";
+    const nextBusinessDescription = nextBusinessInfo.businessDescription.trim() || "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
+
+    const payload = {
+      businessName: nextBusinessName,
+      businessInfo: {
+        ...nextBusinessInfo,
+        businessName: nextBusinessName,
+        businessDescription: nextBusinessDescription,
+      },
+      updatedAt: serverTimestamp(),
+    };
+
+    setSavingBusinessInfo(true);
+    try {
+      await setDoc(doc(db, "users", user.uid), payload, { merge: true });
+      await setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        {
+          businessInfo: payload.businessInfo,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to save your business details right now.";
+      console.error("Failed to save business info", error);
+      toast.error(message);
+      throw error;
+    } finally {
+      setSavingBusinessInfo(false);
+    }
+  }, [user]);
+
+  const saveDraft = useCallback(async () => {
+    if (!user) {
+      return;
+    }
+
+    const currentBusinessInfo = businessInfoRef.current;
+    const nextBusinessName = currentBusinessInfo.businessName.trim() || "Bright Dental";
+    const nextBusinessDescription = currentBusinessInfo.businessDescription.trim() || "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
+
+    const draft = {
+      step,
+      businessInfo: {
+        ...currentBusinessInfo,
+        businessName: nextBusinessName,
+        businessDescription: nextBusinessDescription,
+      },
+      agentType: selectedTypes,
+      responsibilities: selectedResp,
+      personality: {
+        tone,
+        voice,
+        humor: humor[0],
+        empathy: empathy[0],
+      },
+      updatedAt: serverTimestamp(),
+    };
+
+    setSavingDraft(true);
+    try {
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          businessName: nextBusinessName,
+          businessInfo: draft.businessInfo,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      await setDoc(doc(db, "users", user.uid, "createAgentDrafts", "current"), draft, { merge: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to save your draft right now.";
+      console.error("Failed to save create-agent draft", error);
+      toast.error(message);
+      throw error;
+    } finally {
+      setSavingDraft(false);
+    }
+  }, [user, step, selectedTypes, selectedResp, tone, voice, humor, empathy]);
+
+  const updateBusinessInfo = useCallback(
+    (changes: Partial<BusinessInfo>) => {
+      const nextBusinessInfo = {
+        ...businessInfoRef.current,
+        ...changes,
+      };
+
+      businessInfoRef.current = nextBusinessInfo;
+      setBusinessInfo(nextBusinessInfo);
+      saveBusinessInfo(nextBusinessInfo).catch((error) => {
+        console.error("Autosave business info failed", error);
+      });
+    },
+    [saveBusinessInfo],
+  );
+
+  async function handleNext() {
+    if (step === 1) {
+      await saveBusinessInfo();
+    } else {
+      await saveDraft();
+    }
+    next();
+  }
+
+  async function handleDeploy() {
+    await saveDraft();
+    toast.success(`Agent deployed for ${businessName}! Ring +1 (415) 555 0100.`);
+  }
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      saveBusinessInfo().catch((error) => {
+        console.error("Autosave business info failed", error);
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [saveBusinessInfo, user]);
+
+  useEffect(() => {
+    if (!user || !hydratedDraftRef.current) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      saveDraft().catch((error) => {
+        console.error("Autosave draft failed", error);
+      });
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [saveDraft, user]);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -122,19 +394,46 @@ function CreateWizard() {
                 <p className="text-sm text-muted-foreground">This helps the AI sound like it works for you.</p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Business Name"><Input placeholder="Bright Dental" /></Field>
+                <Field label="Business Name">
+                  <Input
+                    placeholder="Bright Dental"
+                    value={businessInfo.businessName}
+                    onChange={(event) => updateBusinessInfo({ businessName: event.target.value })}
+                  />
+                </Field>
                 <Field label="Industry">
-                  <Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <Select value={businessInfo.industry} onValueChange={(value) => updateBusinessInfo({ industry: value })}>
+                    <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
                     <SelectContent>
                       {["Healthcare","Real Estate","Legal","Restaurant","Hotel","Retail","SaaS","Other"].map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Website"><Input placeholder="https://brightdental.com" /></Field>
-                <Field label="Phone Number"><Input placeholder="+1 (415) 555 0100" /></Field>
-                <Field label="Email"><Input type="email" placeholder="hello@brightdental.com" /></Field>
+                <Field label="Website">
+                  <Input
+                    placeholder="https://brightdental.com"
+                    value={businessInfo.website}
+                    onChange={(event) => updateBusinessInfo({ website: event.target.value })}
+                  />
+                </Field>
+                <Field label="Phone Number">
+                  <Input
+                    placeholder="+1 (415) 555 0100"
+                    value={businessInfo.phoneNumber}
+                    onChange={(event) => updateBusinessInfo({ phoneNumber: event.target.value })}
+                  />
+                </Field>
+                <Field label="Email">
+                  <Input
+                    type="email"
+                    placeholder="hello@brightdental.com"
+                    value={businessInfo.email}
+                    onChange={(event) => updateBusinessInfo({ email: event.target.value })}
+                  />
+                </Field>
                 <Field label="Time Zone">
-                  <Select defaultValue="pst"><SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select value={businessInfo.timeZone} onValueChange={(value) => updateBusinessInfo({ timeZone: value })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pst">Pacific (PST)</SelectItem>
                       <SelectItem value="est">Eastern (EST)</SelectItem>
@@ -143,15 +442,38 @@ function CreateWizard() {
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Business Hours"><Input placeholder="Mon–Fri, 9am – 6pm" /></Field>
-                <Field label="Languages Spoken"><Input placeholder="English, Spanish" /></Field>
+                <Field label="Business Hours">
+                  <Input
+                    placeholder="Mon–Fri, 9am – 6pm"
+                    value={businessInfo.businessHours}
+                    onChange={(event) => updateBusinessInfo({ businessHours: event.target.value })}
+                  />
+                </Field>
+                <Field label="Languages Spoken">
+                  <Input
+                    placeholder="English, Spanish"
+                    value={businessInfo.languagesSpoken}
+                    onChange={(event) => updateBusinessInfo({ languagesSpoken: event.target.value })}
+                  />
+                </Field>
                 <div className="md:col-span-2">
                   <Field label="Business Description">
-                    <Textarea rows={4} placeholder="We are a modern dental practice offering cosmetic, restorative, and preventive care…" />
+                    <Textarea
+                      rows={4}
+                      placeholder="We are a modern dental practice offering cosmetic, restorative, and preventive care…"
+                      value={businessInfo.businessDescription}
+                      onChange={(event) => updateBusinessInfo({ businessDescription: event.target.value })}
+                    />
                   </Field>
                 </div>
                 <div className="md:col-span-2">
-                  <Field label="Address"><Input placeholder="123 Market St, San Francisco, CA" /></Field>
+                  <Field label="Address">
+                    <Input
+                      placeholder="123 Market St, San Francisco, CA"
+                      value={businessInfo.address}
+                      onChange={(event) => updateBusinessInfo({ address: event.target.value })}
+                    />
+                  </Field>
                 </div>
               </div>
             </div>
@@ -375,8 +697,8 @@ function CreateWizard() {
                 </div>
                 <pre className="overflow-auto p-5 font-mono text-xs leading-relaxed text-foreground/90">
 {`# ROLE
-You are Aria, the AI Receptionist for Bright Dental — a modern
-practice in San Francisco offering cosmetic, restorative, and
+You are Aria, the AI Receptionist for ${businessName} — a modern
+practice in ${businessInfo.address || "your service area"} offering cosmetic, restorative, and
 preventive care.
 
 # PERSONALITY
@@ -390,7 +712,7 @@ Never rush the caller. Empathy: 70/100. Humor: 30/100.
 - Transfer clinical questions to the on-call dentist.
 
 # GREETING
-"Thanks for calling Bright Dental, this is Aria — how can I help?"
+"Thanks for calling ${businessName}, this is Aria — how can I help?"
 
 # ESCALATION
 If caller mentions pain, bleeding, or emergency → transfer immediately.
@@ -408,7 +730,7 @@ If caller requests a human → warm transfer to reception.
                 <p className="text-sm text-muted-foreground">One last look before your agent goes live.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
-                <Summary label="Business" value="Bright Dental" />
+                <Summary label="Business" value={businessName} />
                 <Summary label="Agent Type" value={selectedTypes.join(", ")} />
                 <Summary label="Voice" value={`${voice} · Professional`} />
                 <Summary label="Phone Number" value="+1 (415) 555 0100" />
@@ -418,7 +740,7 @@ If caller requests a human → warm transfer to reception.
               <Card className="p-6 text-center brand-glow" style={{ background: "var(--gradient-brand)" }}>
                 <div className="text-lg font-semibold text-brand-foreground">Ready to go live</div>
                 <p className="mt-1 text-sm text-brand-foreground/80">Deploying takes about 30 seconds. Your agent will start answering immediately.</p>
-                <Button size="lg" variant="secondary" className="mt-4" onClick={() => toast.success("Agent deployed! Ring +1 (415) 555 0100.")}>
+                <Button size="lg" variant="secondary" className="mt-4" onClick={handleDeploy}>
                   <Rocket className="mr-2 h-4 w-4" /> Deploy agent
                 </Button>
               </Card>
@@ -426,28 +748,15 @@ If caller requests a human → warm transfer to reception.
           )}
 
           <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
-            <Button variant="outline" onClick={prev} disabled={step === 1}><ChevronLeft className="mr-1 h-4 w-4" /> Back</Button>
+            <Button variant="outline" onClick={prev} disabled={step === 1 || savingDraft || savingBusinessInfo}><ChevronLeft className="mr-1 h-4 w-4" /> Back</Button>
             <div className="text-xs text-muted-foreground">Step {step} of 10</div>
-            <Button onClick={next} disabled={step === 10}>Continue <ChevronRight className="ml-1 h-4 w-4" /></Button>
+            <Button onClick={handleNext} disabled={step === 10 || savingDraft || savingBusinessInfo}>
+              {savingDraft || savingBusinessInfo ? "Saving…" : "Continue"} <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
           </div>
         </Card>
       </div>
 
-      {/* Floating AI assistant */}
-      <div className="fixed bottom-6 right-6 z-40 max-w-xs">
-        <Card className="glass p-4 brand-glow">
-          <div className="flex items-start gap-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Sparkles className="h-4 w-4" /></div>
-            <div className="min-w-0 text-sm">
-              <div className="font-semibold">Assistant</div>
-              <p className="mt-1 text-xs text-muted-foreground">Should this agent also handle outbound follow-up calls? I can enable that in step 3.</p>
-              <div className="mt-2 flex gap-2">
-                <Button size="sm" variant="outline" className="h-7 text-xs"><Star className="mr-1 h-3 w-3" /> Yes, add it</Button>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
     </div>
   );
 }

@@ -4,15 +4,18 @@ import {
   LayoutDashboard, Plus, Bot, Phone, BookOpen, BarChart3,
   MessagesSquare, ListChecks, Puzzle, CreditCard, Settings,
   Waves, Search, Bell, Sparkles, ChevronLeft, ChevronRight,
-  Command, Activity, TrendingUp, Zap, Shield, Sun, Moon,
+  Command, Activity, TrendingUp, Zap, Shield, Sun, Moon, LogOut,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AuthScreen } from "@/components/auth/auth-screen";
+import { signOutUser } from "@/lib/firebase-auth";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/app")({
-  component: AppLayout,
+  component: AppRoute,
 });
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; accent?: boolean; badge?: string };
@@ -69,11 +72,46 @@ function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; 
   );
 }
 
-function AppLayout() {
+function AppRoute() {
+  const { user, loading, profile } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
+        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-surface/70 px-5 py-4 shadow-xl backdrop-blur">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+          <span className="text-sm text-muted-foreground">Checking your workspace access...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen compact reason="Sign in to access your dashboard, agents, logs, and settings." />;
+  }
+
+  return (
+    <AppLayout
+      userName={profile?.displayName ?? user.displayName ?? user.email ?? "Workspace user"}
+      userEmail={user.email ?? ""}
+      workspaceName={profile?.businessName ?? profile?.displayName ?? user.displayName ?? user.email ?? "Workspace"}
+    />
+  );
+}
+
+function AppLayout({ userName, userEmail, workspaceName }: { userName: string; userEmail: string; workspaceName: string }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
+  const initials = userName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "U";
 
   useEffect(() => {
     if (isDark) {
@@ -117,7 +155,7 @@ function AppLayout() {
           <div className="mx-3 mt-3">
             <button className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2 text-left text-xs transition hover:bg-sidebar-accent">
               <div className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-[10px] font-bold text-primary">B</div>
-              <span className="flex-1 truncate font-medium text-sidebar-foreground/80">Bright Dental</span>
+              <span className="flex-1 truncate font-medium text-sidebar-foreground/80">{workspaceName}</span>
               <ChevronRight className="h-3 w-3 text-muted-foreground" />
             </button>
           </div>
@@ -175,16 +213,34 @@ function AppLayout() {
           <button className={`flex w-full items-center gap-2.5 rounded-xl p-2 transition hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}>
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarFallback className="bg-surface-2 border border-border text-xs font-semibold text-foreground">
-                JD
+                {initials}
               </AvatarFallback>
             </Avatar>
             {!collapsed && (
               <div className="min-w-0 flex-1 text-left">
-                <div className="truncate text-xs font-semibold text-sidebar-foreground">Jamie Doe</div>
-                <div className="truncate text-[10px] text-muted-foreground">Owner · Bright Dental</div>
+                <div className="truncate text-xs font-semibold text-sidebar-foreground">{userName}</div>
+                <div className="truncate text-[10px] text-muted-foreground">{userEmail || "Authenticated workspace user"}</div>
               </div>
             )}
           </button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={`w-full border-sidebar-border bg-transparent text-sidebar-foreground hover:bg-sidebar-accent ${collapsed ? "justify-center px-0" : "justify-start"}`}
+            onClick={async () => {
+              setSigningOut(true);
+              try {
+                await signOutUser();
+              } finally {
+                setSigningOut(false);
+              }
+            }}
+            disabled={signingOut}
+          >
+            <LogOut className="h-4 w-4" />
+            {!collapsed && <span>{signingOut ? "Signing out..." : "Sign out"}</span>}
+          </Button>
         </div>
 
         {/* Collapse toggle */}
@@ -288,7 +344,7 @@ function AppLayout() {
             {/* Avatar */}
             <Avatar className="h-9 w-9 cursor-pointer ring-2 ring-border/50 transition hover:ring-primary/40">
               <AvatarFallback className="bg-surface-2 border border-border text-xs font-semibold text-foreground">
-                JD
+                {initials}
               </AvatarFallback>
             </Avatar>
           </div>
