@@ -8,16 +8,7 @@ export const Route = createFileRoute("/app/logs")({
   component: Logs,
 });
 
-const logs = Array.from({ length: 14 }).map((_, i) => ({
-  id: `CL-${9210 - i}`,
-  from: i % 3 === 0 ? "+1 (415) 555 013" + (i % 10) : "+1 (628) 555 010" + (i % 10),
-  to: "+1 (415) 555 0100",
-  agent: ["Aria", "Milo", "Nova"][i % 3],
-  dir: i % 4 === 0 ? "out" : i % 5 === 0 ? "miss" : "in",
-  dur: `${1 + (i % 6)}m ${(i * 7) % 60}s`,
-  outcome: ["Booked", "Qualified", "Resolved", "Transferred", "Voicemail"][i % 5],
-  time: `${i * 12 + 3} min ago`,
-}));
+const logs: { id: string; from: string; to: string; agent: string; dir: string; dur: string; outcome: string; time: string }[] = [];
 
 function Logs() {
   return (
@@ -48,22 +39,30 @@ function Logs() {
             </tr>
           </thead>
           <tbody>
-            {logs.map((l) => (
-              <tr key={l.id} className="border-b border-border/40 last:border-0 hover:bg-muted/30">
-                <td className="p-3">
-                  {l.dir === "in" && <PhoneIncoming className="h-4 w-4 text-success" />}
-                  {l.dir === "out" && <PhoneOutgoing className="h-4 w-4 text-primary" />}
-                  {l.dir === "miss" && <PhoneMissed className="h-4 w-4 text-destructive" />}
+            {logs.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">
+                  No call logs yet.
                 </td>
-                <td className="p-3 font-mono text-xs">{l.from}</td>
-                <td className="p-3">{l.agent}</td>
-                <td className="p-3 text-muted-foreground">{l.dur}</td>
-                <td className="p-3">
-                  <Badge variant="outline">{l.outcome}</Badge>
-                </td>
-                <td className="p-3 text-xs text-muted-foreground">{l.time}</td>
               </tr>
-            ))}
+            ) : (
+              logs.map((l) => (
+                <tr key={l.id} className="border-b border-border/40 last:border-0 hover:bg-muted/30">
+                  <td className="p-3">
+                    {l.dir === "in" && <PhoneIncoming className="h-4 w-4 text-success" />}
+                    {l.dir === "out" && <PhoneOutgoing className="h-4 w-4 text-primary" />}
+                    {l.dir === "miss" && <PhoneMissed className="h-4 w-4 text-destructive" />}
+                  </td>
+                  <td className="p-3 font-mono text-xs">{l.from}</td>
+                  <td className="p-3">{l.agent}</td>
+                  <td className="p-3 text-muted-foreground">{l.dur}</td>
+                  <td className="p-3">
+                    <Badge variant="outline">{l.outcome}</Badge>
+                  </td>
+                  <td className="p-3 text-xs text-muted-foreground">{l.time}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </Card>

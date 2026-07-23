@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ import {
   Globe,
 } from "lucide-react";
 import { toast } from "sonner";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc, collection } from "firebase/firestore";
 import { onSnapshot, type DocumentData } from "firebase/firestore";
 
 import { useAuth } from "@/lib/auth-context";
@@ -153,6 +153,7 @@ function normalizeBusinessInfo(info: Partial<BusinessInfo>): Partial<BusinessInf
 
 function CreateWizard() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(["AI Receptionist"]);
   const [selectedResp, setSelectedResp] = useState<string[]>(["Answer Calls", "Book Appointments"]);
@@ -397,8 +398,57 @@ function CreateWizard() {
   }
 
   async function handleDeploy() {
-    await saveDraft();
-    toast.success(`Agent deployed for ${businessName}! Ring +1 (415) 555 0100.`);
+    if (!user) return;
+    setSavingDraft(true);
+    try {
+      const agentsRef = collection(db, "users", user.uid, "agents");
+      const newAgentDoc = doc(agentsRef);
+      const agentId = newAgentDoc.id;
+
+      const newAgent = {
+        id: agentId,
+        name: selectedTypes[0] ? selectedTypes[0].split(" ")[0] || "Aria" : "Aria",
+        role: selectedTypes.join(", ") || "AI Receptionist",
+        status: "Live",
+        calls: 0,
+        csat: 0,
+        number: businessInfo.phoneNumber || "+1 (415) 555 0100",
+        health: 100,
+        lastDeployed: "Just now",
+        knowledge: "Ingested",
+        desc: businessInfo.businessDescription || "AI employee.",
+        createdAt: serverTimestamp(),
+        // Save config
+        businessInfo,
+        selectedTypes,
+        selectedResp,
+        personality: {
+          tone,
+          voice,
+          humor: humor[0],
+          empathy: empathy[0],
+        },
+      };
+
+      await setDoc(newAgentDoc, newAgent);
+
+      // Reset draft step
+      await setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        {
+          step: 1,
+        },
+        { merge: true }
+      );
+
+      toast.success(`Agent ${newAgent.name} deployed successfully!`);
+      navigate({ to: "/app/agents" });
+    } catch (error) {
+      console.error("Failed to deploy agent", error);
+      toast.error("Failed to deploy agent. Please try again.");
+    } finally {
+      setSavingDraft(false);
+    }
   }
 
   useEffect(() => {

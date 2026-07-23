@@ -50,7 +50,7 @@ type NavItem = {
 const navMain: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/app/create", label: "Create Agent", icon: Plus, accent: true },
-  { to: "/app/agents", label: "My Agents", icon: Bot, badge: "6" },
+  { to: "/app/agents", label: "My Agents", icon: Bot },
   { to: "/app/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/app/conversations", label: "Conversations", icon: MessagesSquare },
   { to: "/app/logs", label: "Call Logs", icon: ListChecks },
@@ -174,8 +174,6 @@ function AppLayout({
     }
   }, [isDark]);
 
-  const usagePercent = 61;
-
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* ─── Sidebar ─── */}
@@ -247,30 +245,9 @@ function AppLayout({
         {/* Usage + profile */}
         <div className={`border-t border-sidebar-border ${collapsed ? "p-2" : "p-3"} space-y-2`}>
           {!collapsed && (
-            <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/30 p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-semibold text-sidebar-foreground/80">
-                  Monthly Usage
-                </span>
-                <Badge
-                  variant="outline"
-                  className="h-4 border-primary/30 bg-primary/10 px-1.5 text-[9px] text-primary"
-                >
-                  Growth
-                </Badge>
-              </div>
-              <div className="flex items-baseline justify-between text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">1,842 min</span>
-                <span>/ 3,000</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sidebar-accent">
-                <div
-                  className="h-full rounded-full transition-all duration-700 bg-primary"
-                  style={{ width: `${usagePercent}%` }}
-                />
-              </div>
-              <div className="mt-1 text-[10px] text-muted-foreground">
-                {100 - usagePercent}% remaining this month
+            <div className="rounded-xl border border-border/60 bg-sidebar-accent/30 p-3">
+              <div className="py-4 text-center text-xs text-muted-foreground">
+                No usage data
               </div>
             </div>
           )}
@@ -386,57 +363,8 @@ function AppLayout({
 
               {notifOpen && (
                 <div className="absolute right-0 top-12 z-50 w-80 animate-scale-in overflow-hidden rounded-2xl border border-border/60 bg-popover shadow-2xl">
-                  <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
-                    <span className="text-sm font-semibold">Notifications</span>
-                    <Badge className="bg-primary/15 text-primary text-xs">3 new</Badge>
-                  </div>
-                  <div className="divide-y divide-border/40">
-                    {[
-                      {
-                        icon: Activity,
-                        title: "Agent Aria is offline",
-                        time: "2m ago",
-                        type: "warn",
-                      },
-                      {
-                        icon: TrendingUp,
-                        title: "New milestone: 1,000 calls handled",
-                        time: "1h ago",
-                        type: "success",
-                      },
-                      {
-                        icon: Zap,
-                        title: "Knowledge base re-embedded",
-                        time: "2h ago",
-                        type: "info",
-                      },
-                    ].map((n, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer"
-                      >
-                        <div
-                          className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
-                            n.type === "warn"
-                              ? "bg-destructive/15 text-destructive"
-                              : n.type === "success"
-                                ? "bg-success/15 text-success"
-                                : "bg-primary/15 text-primary"
-                          }`}
-                        >
-                          <n.icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium">{n.title}</div>
-                          <div className="text-xs text-muted-foreground">{n.time}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-border/50 px-4 py-2.5">
-                    <button className="text-xs font-medium text-primary hover:underline">
-                      View all notifications
-                    </button>
+                  <div className="py-8 text-center text-sm text-muted-foreground">
+                    No notifications
                   </div>
                 </div>
               )}
