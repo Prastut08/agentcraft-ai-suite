@@ -34,14 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (snapshot) => {
         const data = snapshot.data() as DocumentData | undefined;
         setProfile({
-          displayName: typeof data?.displayName === "string" && data.displayName.trim().length > 0
-            ? data.displayName
-            : user.displayName ?? user.email ?? "Workspace user",
-          businessName: typeof data?.businessName === "string" && data.businessName.trim().length > 0
-            ? data.businessName
-            : typeof data?.displayName === "string" && data.displayName.trim().length > 0
-            ? data.displayName
-            : user.displayName ?? user.email ?? "Workspace",
+          displayName:
+            typeof data?.displayName === "string" && data.displayName.trim().length > 0
+              ? data.displayName
+              : (user.displayName ?? user.email ?? "Workspace user"),
+          businessName:
+            typeof data?.businessName === "string" && data.businessName.trim().length > 0
+              ? data.businessName
+              : typeof data?.displayName === "string" && data.displayName.trim().length > 0
+                ? data.displayName
+                : (user.displayName ?? user.email ?? "Workspace"),
         });
       },
       (error) => {
@@ -50,20 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           displayName: user.displayName ?? user.email ?? "Workspace user",
           businessName: user.displayName ?? user.email ?? "Workspace",
         });
-      }
+      },
     );
 
     return unsubscribe;
   }, [user]);
 
-  return (
-    <AuthContext.Provider value={{ user, loading, profile }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, loading, profile }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   return useContext(AuthContext);
 }
-

@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Waves } from "lucide-react";
 import { signUpWithEmail } from "@/lib/firebase-auth";
+import { type FirebaseError } from "firebase/app";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect } from "react";
 
@@ -43,8 +51,9 @@ function RegisterPage() {
     try {
       await signUpWithEmail(email, password, name, businessName);
       navigate({ to: "/app/dashboard", replace: true });
-    } catch (err: any) {
-      const code = err?.code ?? "";
+    } catch (err) {
+      const firebaseErr = err instanceof Error ? (err as unknown as FirebaseError) : undefined;
+      const code = firebaseErr?.code ?? "";
       if (code === "auth/email-already-in-use") {
         setError("This email is already registered. Try signing in instead.");
       } else if (code === "auth/invalid-email") {
@@ -54,7 +63,7 @@ function RegisterPage() {
       } else if (code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
-        setError(err?.message ?? "Something went wrong. Please try again.");
+        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       }
     } finally {
       setSubmitting(false);
@@ -79,7 +88,9 @@ function RegisterPage() {
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground brand-glow">
             <Waves className="h-5 w-5" />
           </div>
-          <span className="text-xl font-bold">VoiceForge<span className="text-primary"> AI</span></span>
+          <span className="text-xl font-bold">
+            VoiceForge<span className="text-primary"> AI</span>
+          </span>
         </Link>
 
         <Card className="glass">
@@ -156,7 +167,7 @@ function RegisterPage() {
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 Already have an account?{" "}
-                <Link to="/auth/register" className="font-medium text-primary hover:underline">
+                <Link to="/auth/login" className="font-medium text-primary hover:underline">
                   Sign in
                 </Link>
               </p>
@@ -166,12 +177,16 @@ function RegisterPage() {
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           By creating an account, you agree to our{" "}
-          <a href="#" className="underline hover:text-foreground">Terms</a>{" "}
+          <a href="#" className="underline hover:text-foreground">
+            Terms
+          </a>{" "}
           and{" "}
-          <a href="#" className="underline hover:text-foreground">Privacy Policy</a>.
+          <a href="#" className="underline hover:text-foreground">
+            Privacy Policy
+          </a>
+          .
         </p>
       </div>
     </div>
   );
 }
-

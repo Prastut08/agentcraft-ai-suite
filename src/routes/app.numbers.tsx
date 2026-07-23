@@ -24,25 +24,39 @@ function Numbers() {
           <p className="mt-1 text-sm text-muted-foreground">4 numbers across 3 providers</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline"><PhoneForwarded className="mr-2 h-4 w-4" /> Port number</Button>
-          <Button><Plus className="mr-2 h-4 w-4" /> Buy number</Button>
+          <Button variant="outline">
+            <PhoneForwarded className="mr-2 h-4 w-4" /> Port number
+          </Button>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Buy number
+          </Button>
         </div>
       </div>
 
       <Card className="glass overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border/60 text-xs uppercase text-muted-foreground">
-            <tr><th className="p-4 text-left">Number</th><th className="p-4 text-left">Provider</th><th className="p-4 text-left">Assigned</th><th className="p-4 text-left">Country</th><th className="p-4 text-left">Health</th></tr>
+            <tr>
+              <th className="p-4 text-left">Number</th>
+              <th className="p-4 text-left">Provider</th>
+              <th className="p-4 text-left">Assigned</th>
+              <th className="p-4 text-left">Country</th>
+              <th className="p-4 text-left">Health</th>
+            </tr>
           </thead>
           <tbody>
             {numbers.map((r) => (
               <tr key={r.n} className="border-b border-border/40 last:border-0 hover:bg-muted/30">
                 <td className="p-4 font-mono">{r.n}</td>
-                <td className="p-4"><Badge variant="outline">{r.provider}</Badge></td>
+                <td className="p-4">
+                  <Badge variant="outline">{r.provider}</Badge>
+                </td>
                 <td className="p-4">{r.agent}</td>
                 <td className="p-4 text-muted-foreground">{r.country}</td>
                 <td className="p-4">
-                  <span className="inline-flex items-center gap-1.5 text-xs text-success"><ShieldCheck className="h-3.5 w-3.5" /> {r.status}</span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-success">
+                    <ShieldCheck className="h-3.5 w-3.5" /> {r.status}
+                  </span>
                 </td>
               </tr>
             ))}

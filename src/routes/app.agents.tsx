@@ -3,8 +3,18 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Bot, Phone, MoreHorizontal, Activity, Plus, TrendingUp,
-  Zap, Star, ArrowUpRight, Clock, Users, Settings2,
+  Bot,
+  Phone,
+  MoreHorizontal,
+  Activity,
+  Plus,
+  TrendingUp,
+  Zap,
+  Star,
+  ArrowUpRight,
+  Clock,
+  Users,
+  Settings2,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -14,41 +24,79 @@ export const Route = createFileRoute("/app/agents")({
 
 const agents = [
   {
-    name: "Aria", role: "AI Receptionist", status: "Live",
-    calls: 842, csat: 4.8, number: "+1 (415) 555 0100",
-    health: 98, lastDeployed: "2h ago", knowledge: "248 docs",
+    name: "Aria",
+    role: "AI Receptionist",
+    status: "Live",
+    calls: 842,
+    csat: 4.8,
+    number: "+1 (415) 555 0100",
+    health: 98,
+    lastDeployed: "2h ago",
+    knowledge: "248 docs",
     desc: "Handles inbound reception, appointment booking, and FAQ resolution.",
   },
   {
-    name: "Milo", role: "Sales Representative", status: "Live",
-    calls: 421, csat: 4.6, number: "+1 (415) 555 0142",
-    health: 94, lastDeployed: "1d ago", knowledge: "86 docs",
+    name: "Milo",
+    role: "Sales Representative",
+    status: "Live",
+    calls: 421,
+    csat: 4.6,
+    number: "+1 (415) 555 0142",
+    health: 94,
+    lastDeployed: "1d ago",
+    knowledge: "86 docs",
     desc: "Qualifies leads, runs discovery calls, and schedules demos with the sales team.",
   },
   {
-    name: "Nova", role: "Customer Support", status: "Live",
-    calls: 618, csat: 4.9, number: "+1 (628) 555 0177",
-    health: 99, lastDeployed: "3d ago", knowledge: "312 docs",
+    name: "Nova",
+    role: "Customer Support",
+    status: "Live",
+    calls: 618,
+    csat: 4.9,
+    number: "+1 (628) 555 0177",
+    health: 99,
+    lastDeployed: "3d ago",
+    knowledge: "312 docs",
     desc: "Provides tier-1 customer support and escalates complex issues intelligently.",
   },
   {
-    name: "Kai", role: "Appointment Scheduler", status: "Paused",
-    calls: 210, csat: 4.5, number: "+1 (415) 555 0180",
-    health: 72, lastDeployed: "5d ago", knowledge: "44 docs",
+    name: "Kai",
+    role: "Appointment Scheduler",
+    status: "Paused",
+    calls: 210,
+    csat: 4.5,
+    number: "+1 (415) 555 0180",
+    health: 72,
+    lastDeployed: "5d ago",
+    knowledge: "44 docs",
     desc: "Specializes in scheduling, rescheduling, and sending reminders.",
   },
   {
-    name: "Luna", role: "Hotel Concierge", status: "Draft",
-    calls: 0, csat: 0, number: "—",
-    health: 0, lastDeployed: "—", knowledge: "—",
+    name: "Luna",
+    role: "Hotel Concierge",
+    status: "Draft",
+    calls: 0,
+    csat: 0,
+    number: "—",
+    health: 0,
+    lastDeployed: "—",
+    knowledge: "—",
     desc: "Luxury hospitality agent — currently in configuration.",
   },
 ];
 
 const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
-  Live:   { label: "Live",   dot: "bg-success", badge: "bg-success/12 text-success border-success/20" },
-  Paused: { label: "Paused", dot: "bg-warning",  badge: "bg-warning/12 text-warning border-warning/20" },
-  Draft:  { label: "Draft",  dot: "bg-muted-foreground", badge: "bg-muted/50 text-muted-foreground border-border" },
+  Live: { label: "Live", dot: "bg-success", badge: "bg-success/12 text-success border-success/20" },
+  Paused: {
+    label: "Paused",
+    dot: "bg-warning",
+    badge: "bg-warning/12 text-warning border-warning/20",
+  },
+  Draft: {
+    label: "Draft",
+    dot: "bg-muted-foreground",
+    badge: "bg-muted/50 text-muted-foreground border-border",
+  },
 };
 
 function HealthBar({ value }: { value: number }) {
@@ -61,7 +109,9 @@ function HealthBar({ value }: { value: number }) {
           style={{ width: `${value}%` }}
         />
       </div>
-      <span className="w-8 text-right text-xs font-medium text-muted-foreground">{value || "—"}</span>
+      <span className="w-8 text-right text-xs font-medium text-muted-foreground">
+        {value || "—"}
+      </span>
     </div>
   );
 }
@@ -124,14 +174,20 @@ function Agents() {
                     <div className="relative grid h-14 w-14 place-items-center rounded-2xl bg-surface-2 border border-border text-2xl font-bold text-foreground shadow-sm">
                       {a.name[0]}
                       {/* Status dot */}
-                      <span className={`absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card ${sc.dot} ${a.status === "Live" ? "animate-pulse" : ""}`} />
+                      <span
+                        className={`absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card ${sc.dot} ${a.status === "Live" ? "animate-pulse" : ""}`}
+                      />
                     </div>
                     <div>
                       <div className="font-bold leading-tight">{a.name}</div>
                       <div className="mt-0.5 text-xs text-muted-foreground">{a.role}</div>
                     </div>
                   </div>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                  >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </div>
@@ -141,7 +197,9 @@ function Agents() {
 
                 {/* Status + Number */}
                 <div className="mt-3 flex items-center gap-2">
-                  <Badge className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${sc.badge}`}>
+                  <Badge
+                    className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${sc.badge}`}
+                  >
                     <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${sc.dot}`} />
                     {sc.label}
                   </Badge>
@@ -189,12 +247,19 @@ function Agents() {
                   <Settings2 className="mr-1.5 h-3 w-3" />
                   Configure
                 </Button>
-                <Button size="sm" className="flex-1 bg-primary/15 text-primary text-xs hover:bg-primary/25">
+                <Button
+                  size="sm"
+                  className="flex-1 bg-primary/15 text-primary text-xs hover:bg-primary/25"
+                >
                   <Bot className="mr-1.5 h-3 w-3" />
                   Test Call
                 </Button>
                 {a.status === "Live" && (
-                  <Button size="sm" variant="ghost" className="shrink-0 text-xs text-muted-foreground">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="shrink-0 text-xs text-muted-foreground"
+                  >
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </Button>
                 )}
@@ -211,7 +276,9 @@ function Agents() {
             </div>
             <div>
               <div className="font-semibold text-muted-foreground">Create New Agent</div>
-              <p className="mt-1 text-xs text-muted-foreground/70">Deploy your next AI employee in minutes</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Deploy your next AI employee in minutes
+              </p>
             </div>
           </Card>
         </Link>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Loader2, Lock, Shield, Sparkles, Waves } from "lucide-react";
 
@@ -10,7 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { type AuthMode, signInAsGuest, signInWithEmail, signUpWithEmail, useFirebaseAuth } from "@/lib/firebase-auth";
+import {
+  type AuthMode,
+  signInAsGuest,
+  signInWithEmail,
+  signUpWithEmail,
+  useFirebaseAuth,
+} from "@/lib/firebase-auth";
 
 type AuthScreenProps = {
   compact?: boolean;
@@ -33,11 +39,13 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isNewUserFlowRef = useRef(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && !isNewUserFlowRef.current) {
       navigate({ to: "/app/dashboard", replace: true });
     }
+    isNewUserFlowRef.current = false;
   }, [navigate, user]);
 
   const primaryCopy = useMemo(() => {
@@ -52,14 +60,18 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
 
     try {
       if (mode === "sign-up") {
+        isNewUserFlowRef.current = true;
         await signUpWithEmail(email, password, name, businessName);
+        navigate({ to: "/onboarding/agent-type", replace: true });
       } else {
         await signInWithEmail(email, password);
+        navigate({ to: "/app/dashboard", replace: true });
       }
-
-      navigate({ to: "/app/dashboard", replace: true });
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unable to continue with this account.";
+      const message =
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to continue with this account.";
       setError(message);
     } finally {
       setBusy(false);
@@ -70,10 +82,12 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
     setBusy(true);
     setError(null);
     try {
+      isNewUserFlowRef.current = true;
       await signInAsGuest();
-      navigate({ to: "/app/dashboard", replace: true });
+      navigate({ to: "/onboarding/agent-type", replace: true });
     } catch (demoError) {
-      const message = demoError instanceof Error ? demoError.message : "Unable to start demo session.";
+      const message =
+        demoError instanceof Error ? demoError.message : "Unable to start demo session.";
       setError(message);
     } finally {
       setBusy(false);
@@ -98,7 +112,10 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="absolute inset-0 grid-bg opacity-35" />
-      <div className="absolute inset-x-0 top-0 h-[520px]" style={{ background: "var(--gradient-glow)" }} />
+      <div
+        className="absolute inset-x-0 top-0 h-[520px]"
+        style={{ background: "var(--gradient-glow)" }}
+      />
       <div className="relative mx-auto grid min-h-screen max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8">
         <section className="space-y-8">
           <div className="flex items-center gap-3">
@@ -112,12 +129,16 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
           </div>
 
           <div className="max-w-2xl space-y-5">
-            <Badge variant="secondary" className="rounded-full border border-border px-3 py-1 text-xs">
+            <Badge
+              variant="secondary"
+              className="rounded-full border border-border px-3 py-1 text-xs"
+            >
               <Shield className="mr-1.5 h-3 w-3 text-primary" /> Firebase Auth + Firestore
             </Badge>
             <h1 className="text-5xl font-bold tracking-tight md:text-7xl">{primaryCopy}</h1>
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              {reason ?? "Use your workspace account to sign in or create a new account before opening the dashboard."}
+              {reason ??
+                "Use your workspace account to sign in or create a new account before opening the dashboard."}
             </p>
           </div>
 
@@ -159,7 +180,11 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
               </p>
             </div>
 
-            <Tabs value={mode} onValueChange={(value) => setMode(value as AuthMode)} className="space-y-4">
+            <Tabs
+              value={mode}
+              onValueChange={(value) => setMode(value as AuthMode)}
+              className="space-y-4"
+            >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="sign-in">Sign in</TabsTrigger>
                 <TabsTrigger value="sign-up">Sign up</TabsTrigger>
@@ -168,25 +193,57 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <TabsContent value="sign-in" forceMount className="mt-0 space-y-4">
                   <Field label="Email address">
-                    <Input autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@company.com" />
+                    <Input
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="you@company.com"
+                    />
                   </Field>
                   <Field label="Password">
-                    <Input autoComplete="current-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" />
+                    <Input
+                      autoComplete="current-password"
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="••••••••"
+                    />
                   </Field>
                 </TabsContent>
 
                 <TabsContent value="sign-up" forceMount className="mt-0 space-y-4">
                   <Field label="Business name">
-                    <Input autoComplete="organization" value={businessName} onChange={(event) => setBusinessName(event.target.value)} placeholder="Bright Dental" />
+                    <Input
+                      autoComplete="organization"
+                      value={businessName}
+                      onChange={(event) => setBusinessName(event.target.value)}
+                      placeholder="Bright Dental"
+                    />
                   </Field>
                   <Field label="Name">
-                    <Input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Jamie Doe" />
+                    <Input
+                      autoComplete="name"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      placeholder="Jamie Doe"
+                    />
                   </Field>
                   <Field label="Email address">
-                    <Input autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@company.com" />
+                    <Input
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="you@company.com"
+                    />
                   </Field>
                   <Field label="Password">
-                    <Input autoComplete="new-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Create a password" />
+                    <Input
+                      autoComplete="new-password"
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="Create a password"
+                    />
                   </Field>
                 </TabsContent>
 
@@ -210,7 +267,13 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
                   )}
                 </Button>
 
-                <Button type="button" variant="outline" className="h-11 w-full" onClick={handleDemoAccess} disabled={busy}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full"
+                  onClick={handleDemoAccess}
+                  disabled={busy}
+                >
                   <Sparkles className="mr-2 h-4 w-4 text-primary" />
                   Instant Demo Access
                 </Button>

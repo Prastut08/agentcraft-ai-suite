@@ -5,9 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  FileText, Search, Upload, Plus, Database, Globe, File, FileSpreadsheet,
-  CheckCircle2, Loader2, Trash2, RefreshCw, Filter, ArrowUpRight,
-  HardDrive, Cpu, Clock, Sparkles,
+  FileText,
+  Search,
+  Upload,
+  Plus,
+  Database,
+  Globe,
+  File,
+  FileSpreadsheet,
+  CheckCircle2,
+  Loader2,
+  Trash2,
+  RefreshCw,
+  Filter,
+  ArrowUpRight,
+  HardDrive,
+  Cpu,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/knowledge")({
@@ -16,45 +31,85 @@ export const Route = createFileRoute("/app/knowledge")({
 
 const docs = [
   {
-    n: "Service_Menu_2026.pdf", type: "PDF", size: "428 KB", status: "Embedded",
-    chunks: 124, updated: "2d ago", confidence: 98,
-    icon: FileText, color: "bg-destructive/12 text-destructive",
+    n: "Service_Menu_2026.pdf",
+    type: "PDF",
+    size: "428 KB",
+    status: "Embedded",
+    chunks: 124,
+    updated: "2d ago",
+    confidence: 98,
+    icon: FileText,
+    color: "bg-destructive/12 text-destructive",
   },
   {
-    n: "FAQ_Master.docx", type: "DOCX", size: "112 KB", status: "Embedded",
-    chunks: 62, updated: "3d ago", confidence: 96,
-    icon: File, color: "bg-primary/12 text-primary",
+    n: "FAQ_Master.docx",
+    type: "DOCX",
+    size: "112 KB",
+    status: "Embedded",
+    chunks: 62,
+    updated: "3d ago",
+    confidence: 96,
+    icon: File,
+    color: "bg-primary/12 text-primary",
   },
   {
-    n: "Price_List.xlsx", type: "XLSX", size: "38 KB", status: "Processing",
-    chunks: 0, updated: "Just now", confidence: 0,
-    icon: FileSpreadsheet, color: "bg-success/12 text-success",
+    n: "Price_List.xlsx",
+    type: "XLSX",
+    size: "38 KB",
+    status: "Processing",
+    chunks: 0,
+    updated: "Just now",
+    confidence: 0,
+    icon: FileSpreadsheet,
+    color: "bg-success/12 text-success",
   },
   {
-    n: "Company_Policies.pdf", type: "PDF", size: "1.2 MB", status: "Embedded",
-    chunks: 284, updated: "1w ago", confidence: 99,
-    icon: FileText, color: "bg-destructive/12 text-destructive",
+    n: "Company_Policies.pdf",
+    type: "PDF",
+    size: "1.2 MB",
+    status: "Embedded",
+    chunks: 284,
+    updated: "1w ago",
+    confidence: 99,
+    icon: FileText,
+    color: "bg-destructive/12 text-destructive",
   },
   {
-    n: "brightdental.com", type: "URL", size: "48 pages", status: "Embedded",
-    chunks: 512, updated: "4d ago", confidence: 97,
-    icon: Globe, color: "bg-accent/12 text-accent",
+    n: "brightdental.com",
+    type: "URL",
+    size: "48 pages",
+    status: "Embedded",
+    chunks: 512,
+    updated: "4d ago",
+    confidence: 97,
+    icon: Globe,
+    color: "bg-accent/12 text-accent",
   },
 ];
 
 const statusCfg: Record<string, { label: string; badge: string; dot: string }> = {
-  Embedded:   { label: "Embedded",   badge: "bg-success/12 text-success border-success/20",     dot: "bg-success" },
-  Processing: { label: "Processing", badge: "bg-warning/12 text-warning border-warning/20",     dot: "bg-warning" },
-  Error:      { label: "Error",      badge: "bg-destructive/12 text-destructive border-destructive/20", dot: "bg-destructive" },
+  Embedded: {
+    label: "Embedded",
+    badge: "bg-success/12 text-success border-success/20",
+    dot: "bg-success",
+  },
+  Processing: {
+    label: "Processing",
+    badge: "bg-warning/12 text-warning border-warning/20",
+    dot: "bg-warning",
+  },
+  Error: {
+    label: "Error",
+    badge: "bg-destructive/12 text-destructive border-destructive/20",
+    dot: "bg-destructive",
+  },
 };
 
 function KB() {
   const [dragging, setDragging] = useState(false);
   const [search, setSearch] = useState("");
 
-  const filtered = docs.filter((d) =>
-    d.n.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = docs.filter((d) => d.n.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -81,24 +136,31 @@ function KB() {
       {/* ─── Health Stats ─── */}
       <div className="grid gap-4 md:grid-cols-4">
         {[
-          { label: "Total Sources",     value: "5",     icon: Database,  color: "primary" },
-          { label: "Embedding Health",  value: "100%",  icon: CheckCircle2, color: "success" },
-          { label: "Total Chunks",      value: "982",   icon: Cpu,       color: "accent" },
-          { label: "Last Re-trained",   value: "2h ago",icon: Clock,     color: "muted" },
+          { label: "Total Sources", value: "5", icon: Database, color: "primary" },
+          { label: "Embedding Health", value: "100%", icon: CheckCircle2, color: "success" },
+          { label: "Total Chunks", value: "982", icon: Cpu, color: "accent" },
+          { label: "Last Re-trained", value: "2h ago", icon: Clock, color: "muted" },
         ].map((s) => (
           <Card key={s.label} className="glass p-5">
             <div className="flex items-center gap-2">
-              <div className={`grid h-8 w-8 place-items-center rounded-lg ${
-                s.color === "primary" ? "bg-primary/12 text-primary"
-                : s.color === "success" ? "bg-success/12 text-success"
-                : s.color === "accent" ? "bg-accent/12 text-accent"
-                : "bg-muted/50 text-muted-foreground"
-              }`}>
+              <div
+                className={`grid h-8 w-8 place-items-center rounded-lg ${
+                  s.color === "primary"
+                    ? "bg-primary/12 text-primary"
+                    : s.color === "success"
+                      ? "bg-success/12 text-success"
+                      : s.color === "accent"
+                        ? "bg-accent/12 text-accent"
+                        : "bg-muted/50 text-muted-foreground"
+                }`}
+              >
                 <s.icon className="h-4 w-4" />
               </div>
               <span className="text-xs text-muted-foreground">{s.label}</span>
             </div>
-            <div className={`mt-3 text-2xl font-bold tracking-tight ${s.color === "success" ? "text-success" : ""}`}>
+            <div
+              className={`mt-3 text-2xl font-bold tracking-tight ${s.color === "success" ? "text-success" : ""}`}
+            >
               {s.value}
             </div>
           </Card>
@@ -107,9 +169,15 @@ function KB() {
 
       {/* ─── Upload Zone ─── */}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+        }}
         className={`relative overflow-hidden rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ${
           dragging
             ? "border-primary/70 bg-primary/8 scale-[1.01]"
@@ -194,7 +262,9 @@ function KB() {
                 <div className="min-w-0">
                   <div className="truncate font-medium">{d.n}</div>
                   <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="rounded bg-muted/50 px-1.5 py-0.5 font-mono text-[10px]">{d.type}</span>
+                    <span className="rounded bg-muted/50 px-1.5 py-0.5 font-mono text-[10px]">
+                      {d.type}
+                    </span>
                     <span>{d.size}</span>
                     <span>·</span>
                     <span>Updated {d.updated}</span>
@@ -229,18 +299,30 @@ function KB() {
 
                 {/* Status badge */}
                 <div className="flex w-24 justify-center">
-                  <Badge className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${sc.badge}`}>
-                    <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${sc.dot} ${d.status === "Processing" ? "animate-pulse" : ""}`} />
+                  <Badge
+                    className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${sc.badge}`}
+                  >
+                    <span
+                      className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${sc.dot} ${d.status === "Processing" ? "animate-pulse" : ""}`}
+                    />
                     {sc.label}
                   </Badge>
                 </div>
 
                 {/* Actions */}
                 <div className="flex w-16 justify-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  >
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -263,7 +345,11 @@ function KB() {
               Consider uploading a financing FAQ or enabling a Stripe integration.
             </p>
           </div>
-          <Button variant="outline" size="sm" className="shrink-0 border-primary/30 text-primary hover:bg-primary/10">
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 border-primary/30 text-primary hover:bg-primary/10"
+          >
             Add FAQ
           </Button>
         </div>

@@ -30,7 +30,7 @@ export function useFirebaseAuth() {
           console.warn("Firebase Auth state change error:", error);
           setUser(null);
           setLoading(false);
-        }
+        },
       ),
     [],
   );
@@ -42,7 +42,12 @@ export async function signInWithEmail(email: string, password: string) {
   return signInWithEmailAndPassword(auth, email, password);
 }
 
-export async function signUpWithEmail(email: string, password: string, displayName: string, businessName?: string) {
+export async function signUpWithEmail(
+  email: string,
+  password: string,
+  displayName: string,
+  businessName?: string,
+) {
   const credential = await createUserWithEmailAndPassword(auth, email, password);
   const name = displayName.trim() || email.split("@")[0] || "New user";
   const workspaceName = businessName?.trim() || name;

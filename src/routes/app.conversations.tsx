@@ -5,8 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Play, Download, Smile, Meh, Frown, Search, Filter,
-  Clock, Bot, PhoneIncoming, Copy, ChevronRight, Sparkles,
+  Play,
+  Download,
+  Smile,
+  Meh,
+  Frown,
+  Search,
+  Filter,
+  Clock,
+  Bot,
+  PhoneIncoming,
+  Copy,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -15,43 +26,102 @@ export const Route = createFileRoute("/app/conversations")({
 });
 
 const convos = [
-  { name: "Sarah Kim",          agent: "Aria",  time: "2m ago",  outcome: "Booked",       sentiment: "pos", dur: "3:42", score: 92 },
-  { name: "+1 (415) 555 0132",  agent: "Milo",  time: "8m ago",  outcome: "Qualified",    sentiment: "pos", dur: "5:18", score: 88 },
-  { name: "Rajiv Menon",        agent: "Nova",  time: "22m ago", outcome: "Escalated",    sentiment: "neu", dur: "6:04", score: 61 },
-  { name: "+44 20 7946 0958",   agent: "Aria",  time: "41m ago", outcome: "Resolved",     sentiment: "pos", dur: "2:11", score: 95 },
-  { name: "Anonymous",          agent: "Aria",  time: "1h ago",  outcome: "Voicemail",    sentiment: "neu", dur: "0:38", score: 50 },
-  { name: "Diego Vega",         agent: "Milo",  time: "2h ago",  outcome: "Not interested", sentiment: "neg", dur: "1:22", score: 22 },
+  {
+    name: "Sarah Kim",
+    agent: "Aria",
+    time: "2m ago",
+    outcome: "Booked",
+    sentiment: "pos",
+    dur: "3:42",
+    score: 92,
+  },
+  {
+    name: "+1 (415) 555 0132",
+    agent: "Milo",
+    time: "8m ago",
+    outcome: "Qualified",
+    sentiment: "pos",
+    dur: "5:18",
+    score: 88,
+  },
+  {
+    name: "Rajiv Menon",
+    agent: "Nova",
+    time: "22m ago",
+    outcome: "Escalated",
+    sentiment: "neu",
+    dur: "6:04",
+    score: 61,
+  },
+  {
+    name: "+44 20 7946 0958",
+    agent: "Aria",
+    time: "41m ago",
+    outcome: "Resolved",
+    sentiment: "pos",
+    dur: "2:11",
+    score: 95,
+  },
+  {
+    name: "Anonymous",
+    agent: "Aria",
+    time: "1h ago",
+    outcome: "Voicemail",
+    sentiment: "neu",
+    dur: "0:38",
+    score: 50,
+  },
+  {
+    name: "Diego Vega",
+    agent: "Milo",
+    time: "2h ago",
+    outcome: "Not interested",
+    sentiment: "neg",
+    dur: "1:22",
+    score: 22,
+  },
 ];
 
 const transcript = [
-  { s: "Aria",  t: "Thanks for calling Bright Dental, this is Aria — how can I help you today?" },
+  { s: "Aria", t: "Thanks for calling Bright Dental, this is Aria — how can I help you today?" },
   { s: "Sarah", t: "Hi, I'd like to book a cleaning for next week." },
-  { s: "Aria",  t: "Absolutely, I'd be happy to help with that. Do you have a preferred day or time?" },
+  {
+    s: "Aria",
+    t: "Absolutely, I'd be happy to help with that. Do you have a preferred day or time?",
+  },
   { s: "Sarah", t: "Thursday afternoon if possible." },
-  { s: "Aria",  t: "I have 2:30 pm or 4:00 pm available on Thursday — which works better for you?" },
+  { s: "Aria", t: "I have 2:30 pm or 4:00 pm available on Thursday — which works better for you?" },
   { s: "Sarah", t: "2:30 is perfect." },
-  { s: "Aria",  t: "You're all set! I'll send a confirmation text to this number. Is there anything else I can help you with?" },
+  {
+    s: "Aria",
+    t: "You're all set! I'll send a confirmation text to this number. Is there anything else I can help you with?",
+  },
   { s: "Sarah", t: "No, that's everything. Thank you!" },
-  { s: "Aria",  t: "Great, looking forward to seeing you Thursday. Have a wonderful day!" },
+  { s: "Aria", t: "Great, looking forward to seeing you Thursday. Have a wonderful day!" },
 ];
 
 const sentimentIcon: Record<string, ReactNode> = {
   pos: <Smile className="h-4 w-4 text-success" />,
-  neu: <Meh  className="h-4 w-4 text-muted-foreground" />,
+  neu: <Meh className="h-4 w-4 text-muted-foreground" />,
   neg: <Frown className="h-4 w-4 text-destructive" />,
 };
 
 const outcomeBadge: Record<string, string> = {
-  Booked:         "bg-success/12 text-success border-success/20",
-  Qualified:      "bg-primary/12 text-primary border-primary/20",
-  Escalated:      "bg-warning/12 text-warning border-warning/20",
-  Resolved:       "bg-success/12 text-success border-success/20",
-  Voicemail:      "bg-muted/50 text-muted-foreground border-border",
+  Booked: "bg-success/12 text-success border-success/20",
+  Qualified: "bg-primary/12 text-primary border-primary/20",
+  Escalated: "bg-warning/12 text-warning border-warning/20",
+  Resolved: "bg-success/12 text-success border-success/20",
+  Voicemail: "bg-muted/50 text-muted-foreground border-border",
   "Not interested": "bg-destructive/12 text-destructive border-destructive/20",
 };
 
 function ScoreRing({ score }: { score: number }) {
-  const color = score >= 80 ? "var(--color-success)" : score >= 60 ? "var(--color-accent)" : "var(--color-destructive)";
+  const color =
+    score >= 80
+      ? "var(--color-success)"
+      : score >= 60
+        ? "var(--color-accent)"
+        : "var(--color-destructive)";
   const r = 10;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
@@ -59,8 +129,12 @@ function ScoreRing({ score }: { score: number }) {
     <svg width="28" height="28" className="-rotate-90">
       <circle cx="14" cy="14" r={r} fill="none" stroke="oklch(1 0 0 / 8%)" strokeWidth="2.5" />
       <circle
-        cx="14" cy="14" r={r} fill="none"
-        stroke={color} strokeWidth="2.5"
+        cx="14"
+        cy="14"
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
         strokeDasharray={circ}
         strokeDashoffset={offset}
         strokeLinecap="round"
@@ -117,7 +191,9 @@ function Conversations() {
                 key={i}
                 onClick={() => setSelected(i)}
                 className={`flex w-full items-center gap-3 p-3.5 text-left transition hover:bg-muted/30 ${
-                  i === selected ? "bg-primary/8 border-l-2 border-l-primary" : "border-l-2 border-l-transparent"
+                  i === selected
+                    ? "bg-primary/8 border-l-2 border-l-primary"
+                    : "border-l-2 border-l-transparent"
                 }`}
               >
                 <div className="relative">
@@ -126,7 +202,9 @@ function Conversations() {
                       {c.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="absolute -bottom-0.5 -right-0.5">{sentimentIcon[c.sentiment]}</span>
+                  <span className="absolute -bottom-0.5 -right-0.5">
+                    {sentimentIcon[c.sentiment]}
+                  </span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
@@ -145,7 +223,9 @@ function Conversations() {
                 </div>
                 <div className="relative shrink-0">
                   <ScoreRing score={c.score} />
-                  <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold">{c.score}</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold">
+                    {c.score}
+                  </span>
                 </div>
               </button>
             ))}
@@ -177,14 +257,21 @@ function Conversations() {
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge className={`rounded-full border px-2.5 text-[10px] font-semibold ${outcomeBadge[active.outcome] || "bg-muted/50 text-muted-foreground border-border"}`}>
+                  <Badge
+                    className={`rounded-full border px-2.5 text-[10px] font-semibold ${outcomeBadge[active.outcome] || "bg-muted/50 text-muted-foreground border-border"}`}
+                  >
                     {active.outcome}
                   </Badge>
                   <Badge variant="outline" className="text-[10px]">
                     Lead score {active.score}
                   </Badge>
                   <Badge variant="outline" className="text-[10px]">
-                    {active.sentiment === "pos" ? "Positive" : active.sentiment === "neu" ? "Neutral" : "Negative"} sentiment
+                    {active.sentiment === "pos"
+                      ? "Positive"
+                      : active.sentiment === "neu"
+                        ? "Neutral"
+                        : "Negative"}{" "}
+                    sentiment
                   </Badge>
                 </div>
               </div>
@@ -229,19 +316,25 @@ function Conversations() {
                 return (
                   <div key={i} className={`flex gap-3 ${isAgent ? "" : "flex-row-reverse"}`}>
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback className={`text-xs font-semibold ${isAgent ? "bg-primary/20 text-primary" : "bg-surface-2"}`}>
+                      <AvatarFallback
+                        className={`text-xs font-semibold ${isAgent ? "bg-primary/20 text-primary" : "bg-surface-2"}`}
+                      >
                         {m.s[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className={`max-w-[72%] space-y-1`}>
-                      <div className={`text-[10px] font-medium ${isAgent ? "text-primary" : "text-muted-foreground"} ${isAgent ? "" : "text-right"}`}>
+                      <div
+                        className={`text-[10px] font-medium ${isAgent ? "text-primary" : "text-muted-foreground"} ${isAgent ? "" : "text-right"}`}
+                      >
                         {m.s}
                       </div>
-                      <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                        isAgent
-                          ? "rounded-tl-sm bg-primary/10 text-foreground"
-                          : "rounded-tr-sm bg-surface-2 text-foreground"
-                      }`}>
+                      <div
+                        className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                          isAgent
+                            ? "rounded-tl-sm bg-primary/10 text-foreground"
+                            : "rounded-tr-sm bg-surface-2 text-foreground"
+                        }`}
+                      >
                         {m.t}
                       </div>
                     </div>
@@ -259,17 +352,30 @@ function Conversations() {
                   <Sparkles className="h-3 w-3 text-primary" />
                   AI Summary
                 </div>
-                <p className="text-xs leading-relaxed">Sarah booked a dental cleaning for Thursday 2:30 pm. Confirmation SMS sent. Positive experience overall.</p>
+                <p className="text-xs leading-relaxed">
+                  Sarah booked a dental cleaning for Thursday 2:30 pm. Confirmation SMS sent.
+                  Positive experience overall.
+                </p>
               </div>
               <div className="rounded-xl border border-border/50 bg-muted/10 p-3">
-                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Action Items</div>
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Action Items
+                </div>
                 <ul className="space-y-1 text-xs">
-                  <li className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-success" />Calendar event created</li>
-                  <li className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-success" />Reminder SMS scheduled 24h prior</li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                    Calendar event created
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                    Reminder SMS scheduled 24h prior
+                  </li>
                 </ul>
               </div>
               <div className="rounded-xl border border-border/50 bg-muted/10 p-3">
-                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">CRM Sync</div>
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  CRM Sync
+                </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Contact</span>

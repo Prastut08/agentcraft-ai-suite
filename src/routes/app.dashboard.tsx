@@ -4,12 +4,33 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Phone, PhoneIncoming, PhoneMissed, Clock, CalendarCheck, DollarSign,
-  TrendingUp, Users, Database, Activity, ArrowUpRight, Plus, Bot,
-  Sparkles, Zap, Shield, MoreHorizontal, ChevronUp,
+  Phone,
+  PhoneIncoming,
+  PhoneMissed,
+  Clock,
+  CalendarCheck,
+  DollarSign,
+  TrendingUp,
+  Users,
+  Database,
+  Activity,
+  ArrowUpRight,
+  Plus,
+  Bot,
+  Sparkles,
+  Zap,
+  Shield,
+  MoreHorizontal,
+  ChevronUp,
 } from "lucide-react";
 import {
-  Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from "recharts";
 
 export const Route = createFileRoute("/app/dashboard")({
@@ -23,22 +44,113 @@ const callsData = Array.from({ length: 14 }, (_, i) => ({
 }));
 
 const stats = [
-  { label: "Total Calls", value: "2,847", delta: "+12.4%", trend: "up", icon: Phone, color: "primary" },
-  { label: "Active Agents", value: "6", delta: "+2 this week", trend: "up", icon: Bot, color: "primary" },
-  { label: "Appointments", value: "412", delta: "+22%", trend: "up", icon: CalendarCheck, color: "success" },
-  { label: "Revenue Impact", value: "$48.2k", delta: "+31%", trend: "up", icon: DollarSign, color: "success" },
-  { label: "Missed Calls", value: "18", delta: "-38%", trend: "down", icon: PhoneMissed, color: "accent" },
-  { label: "Avg Duration", value: "3m 42s", delta: "+8s", trend: "up", icon: Clock, color: "muted" },
-  { label: "Lead Conversion", value: "34.7%", delta: "+4.1pts", trend: "up", icon: TrendingUp, color: "primary" },
-  { label: "CSAT Score", value: "4.8 / 5", delta: "+0.2", trend: "up", icon: Users, color: "success" },
+  {
+    label: "Total Calls",
+    value: "2,847",
+    delta: "+12.4%",
+    trend: "up",
+    icon: Phone,
+    color: "primary",
+  },
+  {
+    label: "Active Agents",
+    value: "6",
+    delta: "+2 this week",
+    trend: "up",
+    icon: Bot,
+    color: "primary",
+  },
+  {
+    label: "Appointments",
+    value: "412",
+    delta: "+22%",
+    trend: "up",
+    icon: CalendarCheck,
+    color: "success",
+  },
+  {
+    label: "Revenue Impact",
+    value: "$48.2k",
+    delta: "+31%",
+    trend: "up",
+    icon: DollarSign,
+    color: "success",
+  },
+  {
+    label: "Missed Calls",
+    value: "18",
+    delta: "-38%",
+    trend: "down",
+    icon: PhoneMissed,
+    color: "accent",
+  },
+  {
+    label: "Avg Duration",
+    value: "3m 42s",
+    delta: "+8s",
+    trend: "up",
+    icon: Clock,
+    color: "muted",
+  },
+  {
+    label: "Lead Conversion",
+    value: "34.7%",
+    delta: "+4.1pts",
+    trend: "up",
+    icon: TrendingUp,
+    color: "primary",
+  },
+  {
+    label: "CSAT Score",
+    value: "4.8 / 5",
+    delta: "+0.2",
+    trend: "up",
+    icon: Users,
+    color: "success",
+  },
 ];
 
 const recent = [
-  { name: "Sarah Kim", agent: "Aria", role: "Receptionist", outcome: "Appointment booked", time: "2m ago", status: "success" },
-  { name: "+1 (415) 555 0132", agent: "Milo", role: "Sales", outcome: "Qualified lead — hot", time: "8m ago", status: "success" },
-  { name: "Rajiv Menon", agent: "Nova", role: "Support", outcome: "Escalated to human", time: "22m ago", status: "warn" },
-  { name: "+44 20 7946 0958", agent: "Aria", role: "FAQ", outcome: "Resolved", time: "41m ago", status: "success" },
-  { name: "Anonymous", agent: "Aria", role: "Receptionist", outcome: "Voicemail left", time: "1h ago", status: "muted" },
+  {
+    name: "Sarah Kim",
+    agent: "Aria",
+    role: "Receptionist",
+    outcome: "Appointment booked",
+    time: "2m ago",
+    status: "success",
+  },
+  {
+    name: "+1 (415) 555 0132",
+    agent: "Milo",
+    role: "Sales",
+    outcome: "Qualified lead — hot",
+    time: "8m ago",
+    status: "success",
+  },
+  {
+    name: "Rajiv Menon",
+    agent: "Nova",
+    role: "Support",
+    outcome: "Escalated to human",
+    time: "22m ago",
+    status: "warn",
+  },
+  {
+    name: "+44 20 7946 0958",
+    agent: "Aria",
+    role: "FAQ",
+    outcome: "Resolved",
+    time: "41m ago",
+    status: "success",
+  },
+  {
+    name: "Anonymous",
+    agent: "Aria",
+    role: "Receptionist",
+    outcome: "Voicemail left",
+    time: "1h ago",
+    status: "muted",
+  },
 ];
 
 const quickActions = [
@@ -48,7 +160,7 @@ const quickActions = [
   { label: "Integrations", icon: Zap, to: "/app/integrations", color: "warning" },
 ];
 
-function StatCard({ s }: { s: typeof stats[0] }) {
+function StatCard({ s }: { s: (typeof stats)[0] }) {
   const colorMap: Record<string, string> = {
     primary: "bg-primary/12 text-primary",
     success: "bg-success/12 text-success",
@@ -56,26 +168,41 @@ function StatCard({ s }: { s: typeof stats[0] }) {
     muted: "bg-muted/50 text-muted-foreground",
     warning: "bg-warning/12 text-warning",
   };
-  const deltaColor = s.trend === "down" && s.label !== "Missed Calls"
-    ? "text-destructive"
-    : s.label === "Missed Calls" && s.trend === "down"
-    ? "text-success"
-    : "text-success";
+  const deltaColor =
+    s.trend === "down" && s.label !== "Missed Calls"
+      ? "text-destructive"
+      : s.label === "Missed Calls" && s.trend === "down"
+        ? "text-success"
+        : "text-success";
 
   return (
     <Card className="glass card-hover group relative overflow-hidden p-5">
       {/* Subtle gradient accent in background */}
-      <div className={`absolute right-0 top-0 h-20 w-20 rounded-bl-3xl opacity-5 ${
-        s.color === "primary" ? "bg-primary" : s.color === "success" ? "bg-success" : s.color === "accent" ? "bg-accent" : "bg-muted"
-      }`} />
+      <div
+        className={`absolute right-0 top-0 h-20 w-20 rounded-bl-3xl opacity-5 ${
+          s.color === "primary"
+            ? "bg-primary"
+            : s.color === "success"
+              ? "bg-success"
+              : s.color === "accent"
+                ? "bg-accent"
+                : "bg-muted"
+        }`}
+      />
       <div className="flex items-start justify-between">
-        <div className={`grid h-10 w-10 place-items-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${colorMap[s.color]}`}>
+        <div
+          className={`grid h-10 w-10 place-items-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${colorMap[s.color]}`}
+        >
           <s.icon className="h-5 w-5" />
         </div>
-        <ChevronUp className={`h-4 w-4 transition-opacity ${deltaColor} opacity-0 group-hover:opacity-100`} />
+        <ChevronUp
+          className={`h-4 w-4 transition-opacity ${deltaColor} opacity-0 group-hover:opacity-100`}
+        />
       </div>
       <div className="mt-4">
-        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</div>
+        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {s.label}
+        </div>
         <div className="mt-1.5 text-2xl font-bold tracking-tight">{s.value}</div>
         <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${deltaColor}`}>
           <TrendingUp className="h-3 w-3" />
@@ -119,7 +246,8 @@ function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Welcome back, Jamie</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
             Your voice workforce handled{" "}
-            <span className="font-semibold text-foreground">128 calls today</span> — 94% resolved without human intervention.
+            <span className="font-semibold text-foreground">128 calls today</span> — 94% resolved
+            without human intervention.
           </p>
         </div>
         <div className="flex gap-2">
@@ -138,7 +266,9 @@ function Dashboard() {
 
       {/* ─── KPI Grid ─── */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {stats.map((s) => <StatCard key={s.label} s={s} />)}
+        {stats.map((s) => (
+          <StatCard key={s.label} s={s} />
+        ))}
       </div>
 
       {/* ─── Chart + Recent ─── */}
@@ -148,7 +278,9 @@ function Dashboard() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h3 className="font-semibold">Call Volume</h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">Last 14 days — inbound + booked</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Last 14 days — inbound + booked
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -177,11 +309,39 @@ function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" vertical={false} />
-                <XAxis dataKey="day" stroke="oklch(1 0 0 / 30%)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="oklch(1 0 0 / 30%)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: "oklch(1 0 0 / 8%)", strokeWidth: 1 }} />
-                <Area type="monotone" dataKey="calls" stroke="var(--color-primary)" fill="url(#c1)" strokeWidth={2} dot={false} />
-                <Area type="monotone" dataKey="booked" stroke="var(--color-accent)" fill="url(#c2)" strokeWidth={2} dot={false} />
+                <XAxis
+                  dataKey="day"
+                  stroke="oklch(1 0 0 / 30%)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="oklch(1 0 0 / 30%)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: "oklch(1 0 0 / 8%)", strokeWidth: 1 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="calls"
+                  stroke="var(--color-primary)"
+                  fill="url(#c1)"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="booked"
+                  stroke="var(--color-accent)"
+                  fill="url(#c2)"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -191,7 +351,10 @@ function Dashboard() {
         <Card className="glass p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-semibold">Recent Conversations</h3>
-            <Link to="/app/conversations" className="flex items-center gap-1 text-xs font-medium text-primary transition hover:opacity-80">
+            <Link
+              to="/app/conversations"
+              className="flex items-center gap-1 text-xs font-medium text-primary transition hover:opacity-80"
+            >
               View all <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
@@ -214,9 +377,15 @@ function Dashboard() {
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-[10px] text-muted-foreground">{r.time}</span>
-                  <span className={`h-1.5 w-1.5 rounded-full ${
-                    r.status === "success" ? "bg-success" : r.status === "warn" ? "bg-warning" : "bg-muted-foreground/40"
-                  }`} />
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      r.status === "success"
+                        ? "bg-success"
+                        : r.status === "warn"
+                          ? "bg-warning"
+                          : "bg-muted-foreground/40"
+                    }`}
+                  />
                 </div>
               </div>
             ))}
@@ -230,12 +399,17 @@ function Dashboard() {
         {quickActions.map((a) => (
           <Link key={a.label} to={a.to as string as "/app/create"}>
             <Card className="glass group h-full cursor-pointer p-4 transition hover:brand-glow">
-              <div className={`mb-3 grid h-10 w-10 place-items-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${
-                a.color === "primary" ? "bg-primary/15 text-primary"
-                : a.color === "accent" ? "bg-accent/15 text-accent"
-                : a.color === "success" ? "bg-success/15 text-success"
-                : "bg-warning/15 text-warning"
-              }`}>
+              <div
+                className={`mb-3 grid h-10 w-10 place-items-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${
+                  a.color === "primary"
+                    ? "bg-primary/15 text-primary"
+                    : a.color === "accent"
+                      ? "bg-accent/15 text-accent"
+                      : a.color === "success"
+                        ? "bg-success/15 text-success"
+                        : "bg-warning/15 text-warning"
+                }`}
+              >
                 <a.icon className="h-5 w-5" />
               </div>
               <div className="text-sm font-semibold">{a.label}</div>
@@ -311,11 +485,18 @@ function Dashboard() {
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold">AI Recommendations</div>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Based on your call patterns, enabling <span className="text-foreground font-medium">after-hours voicemail</span> could capture{" "}
-              <span className="text-success font-medium">~42 additional leads/month</span>. Agent Milo has a 94% first-call resolution rate — consider expanding his responsibilities.
+              Based on your call patterns, enabling{" "}
+              <span className="text-foreground font-medium">after-hours voicemail</span> could
+              capture <span className="text-success font-medium">~42 additional leads/month</span>.
+              Agent Milo has a 94% first-call resolution rate — consider expanding his
+              responsibilities.
             </p>
           </div>
-          <Button variant="outline" size="sm" className="shrink-0 border-primary/30 text-primary hover:bg-primary/10">
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 border-primary/30 text-primary hover:bg-primary/10"
+          >
             Apply
           </Button>
         </div>

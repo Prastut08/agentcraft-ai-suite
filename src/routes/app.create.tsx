@@ -9,12 +9,31 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Check, ChevronRight, ChevronLeft, Building2, Bot, ListChecks, BookOpen,
-  Sparkles, Mic, Workflow, Phone, FileCode2, Rocket, Upload, Plus,
-  Play, Star, Globe,
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  Building2,
+  Bot,
+  ListChecks,
+  BookOpen,
+  Sparkles,
+  Mic,
+  Workflow,
+  Phone,
+  FileCode2,
+  Rocket,
+  Upload,
+  Plus,
+  Play,
+  Star,
+  Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
@@ -41,18 +60,45 @@ const steps = [
 ];
 
 const agentTypes = [
-  "AI Receptionist","Customer Support Agent","FAQ Agent","Appointment Scheduler",
-  "Sales Representative","Lead Qualification Agent","Outbound Calling Agent","Follow-up Agent",
-  "Restaurant Order Taking","Hotel Concierge","Medical Receptionist","Real Estate Assistant",
-  "Insurance Agent","Recruitment Agent","Debt Collection Agent","Survey Agent",
-  "Customer Success Agent","Technical Support","Custom AI Agent",
+  "AI Receptionist",
+  "Customer Support Agent",
+  "FAQ Agent",
+  "Appointment Scheduler",
+  "Sales Representative",
+  "Lead Qualification Agent",
+  "Outbound Calling Agent",
+  "Follow-up Agent",
+  "Restaurant Order Taking",
+  "Hotel Concierge",
+  "Medical Receptionist",
+  "Real Estate Assistant",
+  "Insurance Agent",
+  "Recruitment Agent",
+  "Debt Collection Agent",
+  "Survey Agent",
+  "Customer Success Agent",
+  "Technical Support",
+  "Custom AI Agent",
 ];
 
 const responsibilities = [
-  "Answer Calls","Make Calls","Transfer Calls","Book Appointments","Cancel Appointments",
-  "Answer FAQs","Collect Leads","Verify Customers","Process Orders","Upsell Products",
-  "Collect Payments","Route Calls","Schedule Meetings","Send SMS","Send Emails",
-  "Escalate Calls","Take Messages",
+  "Answer Calls",
+  "Make Calls",
+  "Transfer Calls",
+  "Book Appointments",
+  "Cancel Appointments",
+  "Answer FAQs",
+  "Collect Leads",
+  "Verify Customers",
+  "Process Orders",
+  "Upsell Products",
+  "Collect Payments",
+  "Route Calls",
+  "Schedule Meetings",
+  "Send SMS",
+  "Send Emails",
+  "Escalate Calls",
+  "Take Messages",
 ];
 
 const voices = [
@@ -64,7 +110,17 @@ const voices = [
   { name: "Atlas", tag: "Male · Mature", accent: "American" },
 ];
 
-const tones = ["Friendly","Professional","Luxury","Formal","Casual","Empathetic","Energetic","Calm","Sales Focused"];
+const tones = [
+  "Friendly",
+  "Professional",
+  "Luxury",
+  "Formal",
+  "Casual",
+  "Empathetic",
+  "Energetic",
+  "Calm",
+  "Sales Focused",
+];
 
 type BusinessInfo = {
   businessName: string;
@@ -89,7 +145,8 @@ function normalizeBusinessInfo(info: Partial<BusinessInfo>): Partial<BusinessInf
     timeZone: typeof info.timeZone === "string" ? info.timeZone : "pst",
     businessHours: typeof info.businessHours === "string" ? info.businessHours : "",
     languagesSpoken: typeof info.languagesSpoken === "string" ? info.languagesSpoken : "",
-    businessDescription: typeof info.businessDescription === "string" ? info.businessDescription : "",
+    businessDescription:
+      typeof info.businessDescription === "string" ? info.businessDescription : "",
     address: typeof info.address === "string" ? info.address : "",
   };
 }
@@ -104,8 +161,9 @@ function CreateWizard() {
   const [humor, setHumor] = useState([30]);
   const [empathy, setEmpathy] = useState([70]);
   const [savingDraft, setSavingDraft] = useState(false);
-  const [savingBusinessInfo, setSavingBusinessInfo] = useState(false);
   const hydratedDraftRef = useRef(false);
+  const stepHydratedRef = useRef(false);
+  const saveTimerRef = useRef<any>(undefined);
   const initialBusinessInfo = {
     businessName: "",
     industry: "",
@@ -124,7 +182,9 @@ function CreateWizard() {
   const progress = (step / 10) * 100;
 
   const businessName = businessInfo.businessName.trim() || "Bright Dental";
-  const businessDescription = businessInfo.businessDescription.trim() || "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
+  const businessDescription =
+    businessInfo.businessDescription.trim() ||
+    "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
@@ -155,18 +215,20 @@ function CreateWizard() {
       const data = snapshot.data() as DocumentData | undefined;
       if (!data) {
         hydratedDraftRef.current = true;
+        stepHydratedRef.current = true;
         return;
       }
 
-      if (typeof data.step === "number") {
+      if (typeof data.step === "number" && !stepHydratedRef.current) {
         setStep(data.step);
+        stepHydratedRef.current = true;
       }
 
       if (data.businessInfo && typeof data.businessInfo === "object") {
         setBusinessInfo((current) => {
           const nextBusinessInfo = {
-          ...current,
-          ...normalizeBusinessInfo(data.businessInfo as Partial<BusinessInfo>),
+            ...current,
+            ...normalizeBusinessInfo(data.businessInfo as Partial<BusinessInfo>),
           };
           businessInfoRef.current = nextBusinessInfo;
           return nextBusinessInfo;
@@ -178,7 +240,9 @@ function CreateWizard() {
       }
 
       if (Array.isArray(data.responsibilities)) {
-        setSelectedResp(data.responsibilities.filter((item): item is string => typeof item === "string"));
+        setSelectedResp(
+          data.responsibilities.filter((item): item is string => typeof item === "string"),
+        );
       }
 
       if (typeof data.personality?.tone === "string") {
@@ -203,44 +267,49 @@ function CreateWizard() {
     return unsubscribe;
   }, [user]);
 
-  const saveBusinessInfo = useCallback(async (nextBusinessInfo: BusinessInfo = businessInfoRef.current) => {
-    if (!user) {
-      return;
-    }
+  const saveBusinessInfo = useCallback(
+    async (nextBusinessInfo: BusinessInfo = businessInfoRef.current) => {
+      if (!user) {
+        return;
+      }
 
-    const nextBusinessName = nextBusinessInfo.businessName.trim() || "Bright Dental";
-    const nextBusinessDescription = nextBusinessInfo.businessDescription.trim() || "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
+      const nextBusinessName = nextBusinessInfo.businessName.trim() || "Bright Dental";
+      const nextBusinessDescription =
+        nextBusinessInfo.businessDescription.trim() ||
+        "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
 
-    const payload = {
-      businessName: nextBusinessName,
-      businessInfo: {
-        ...nextBusinessInfo,
+      const payload = {
         businessName: nextBusinessName,
-        businessDescription: nextBusinessDescription,
-      },
-      updatedAt: serverTimestamp(),
-    };
-
-    setSavingBusinessInfo(true);
-    try {
-      await setDoc(doc(db, "users", user.uid), payload, { merge: true });
-      await setDoc(
-        doc(db, "users", user.uid, "createAgentDrafts", "current"),
-        {
-          businessInfo: payload.businessInfo,
-          updatedAt: serverTimestamp(),
+        businessInfo: {
+          ...nextBusinessInfo,
+          businessName: nextBusinessName,
+          businessDescription: nextBusinessDescription,
         },
-        { merge: true },
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to save your business details right now.";
-      console.error("Failed to save business info", error);
-      toast.error(message);
-      throw error;
-    } finally {
-      setSavingBusinessInfo(false);
-    }
-  }, [user]);
+        updatedAt: serverTimestamp(),
+      };
+
+      try {
+        await setDoc(doc(db, "users", user.uid), payload, { merge: true });
+        await setDoc(
+          doc(db, "users", user.uid, "createAgentDrafts", "current"),
+          {
+            businessInfo: payload.businessInfo,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to save your business details right now.";
+        console.error("Failed to save business info", error);
+        toast.error(message);
+        throw error;
+      }
+    },
+    [user],
+  );
 
   const saveDraft = useCallback(async () => {
     if (!user) {
@@ -249,7 +318,9 @@ function CreateWizard() {
 
     const currentBusinessInfo = businessInfoRef.current;
     const nextBusinessName = currentBusinessInfo.businessName.trim() || "Bright Dental";
-    const nextBusinessDescription = currentBusinessInfo.businessDescription.trim() || "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
+    const nextBusinessDescription =
+      currentBusinessInfo.businessDescription.trim() ||
+      "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
 
     const draft = {
       step,
@@ -281,9 +352,12 @@ function CreateWizard() {
         { merge: true },
       );
 
-      await setDoc(doc(db, "users", user.uid, "createAgentDrafts", "current"), draft, { merge: true });
+      await setDoc(doc(db, "users", user.uid, "createAgentDrafts", "current"), draft, {
+        merge: true,
+      });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to save your draft right now.";
+      const message =
+        error instanceof Error ? error.message : "Unable to save your draft right now.";
       console.error("Failed to save create-agent draft", error);
       toast.error(message);
       throw error;
@@ -301,9 +375,16 @@ function CreateWizard() {
 
       businessInfoRef.current = nextBusinessInfo;
       setBusinessInfo(nextBusinessInfo);
-      saveBusinessInfo(nextBusinessInfo).catch((error) => {
-        console.error("Autosave business info failed", error);
-      });
+
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+
+      saveTimerRef.current = window.setTimeout(() => {
+        saveBusinessInfo(nextBusinessInfo).catch((error) => {
+          console.error("Autosave business info failed", error);
+        });
+      }, 800);
     },
     [saveBusinessInfo],
   );
@@ -311,8 +392,6 @@ function CreateWizard() {
   async function handleNext() {
     if (step === 1) {
       await saveBusinessInfo();
-    } else {
-      await saveDraft();
     }
     next();
   }
@@ -323,18 +402,12 @@ function CreateWizard() {
   }
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      saveBusinessInfo().catch((error) => {
-        console.error("Autosave business info failed", error);
-      });
-    }, 250);
-
-    return () => window.clearTimeout(timer);
-  }, [saveBusinessInfo, user]);
+    return () => {
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || !hydratedDraftRef.current) {
@@ -354,7 +427,9 @@ function CreateWizard() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Create your AI Voice Agent</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Step {step} of 10 — {steps[step - 1].label}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Step {step} of 10 — {steps[step - 1].label}
+        </p>
         <Progress value={progress} className="mt-4 h-1.5" />
       </div>
 
@@ -370,12 +445,22 @@ function CreateWizard() {
                   key={s.n}
                   onClick={() => setStep(s.n)}
                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${
-                    active ? "bg-primary/15 text-foreground" : done ? "text-muted-foreground hover:bg-muted/40" : "text-muted-foreground/60"
+                    active
+                      ? "bg-primary/15 text-foreground"
+                      : done
+                        ? "text-muted-foreground hover:bg-muted/40"
+                        : "text-muted-foreground/60"
                   }`}
                 >
-                  <div className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${
-                    active ? "bg-primary text-primary-foreground" : done ? "bg-success/20 text-success" : "bg-muted"
-                  }`}>
+                  <div
+                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${
+                      active
+                        ? "bg-primary text-primary-foreground"
+                        : done
+                          ? "bg-success/20 text-success"
+                          : "bg-muted"
+                    }`}
+                  >
                     {done ? <Check className="h-3 w-3" /> : s.n}
                   </div>
                   <span className="truncate">{s.label}</span>
@@ -391,7 +476,9 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Tell us about your business</h2>
-                <p className="text-sm text-muted-foreground">This helps the AI sound like it works for you.</p>
+                <p className="text-sm text-muted-foreground">
+                  This helps the AI sound like it works for you.
+                </p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Business Name">
@@ -402,10 +489,28 @@ function CreateWizard() {
                   />
                 </Field>
                 <Field label="Industry">
-                  <Select value={businessInfo.industry} onValueChange={(value) => updateBusinessInfo({ industry: value })}>
-                    <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <Select
+                    value={businessInfo.industry}
+                    onValueChange={(value) => updateBusinessInfo({ industry: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select…" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {["Healthcare","Real Estate","Legal","Restaurant","Hotel","Retail","SaaS","Other"].map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                      {[
+                        "Healthcare",
+                        "Real Estate",
+                        "Legal",
+                        "Restaurant",
+                        "Hotel",
+                        "Retail",
+                        "SaaS",
+                        "Other",
+                      ].map((i) => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>
@@ -432,8 +537,13 @@ function CreateWizard() {
                   />
                 </Field>
                 <Field label="Time Zone">
-                  <Select value={businessInfo.timeZone} onValueChange={(value) => updateBusinessInfo({ timeZone: value })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={businessInfo.timeZone}
+                    onValueChange={(value) => updateBusinessInfo({ timeZone: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pst">Pacific (PST)</SelectItem>
                       <SelectItem value="est">Eastern (EST)</SelectItem>
@@ -453,7 +563,9 @@ function CreateWizard() {
                   <Input
                     placeholder="English, Spanish"
                     value={businessInfo.languagesSpoken}
-                    onChange={(event) => updateBusinessInfo({ languagesSpoken: event.target.value })}
+                    onChange={(event) =>
+                      updateBusinessInfo({ languagesSpoken: event.target.value })
+                    }
                   />
                 </Field>
                 <div className="md:col-span-2">
@@ -462,7 +574,9 @@ function CreateWizard() {
                       rows={4}
                       placeholder="We are a modern dental practice offering cosmetic, restorative, and preventive care…"
                       value={businessInfo.businessDescription}
-                      onChange={(event) => updateBusinessInfo({ businessDescription: event.target.value })}
+                      onChange={(event) =>
+                        updateBusinessInfo({ businessDescription: event.target.value })
+                      }
                     />
                   </Field>
                 </div>
@@ -482,17 +596,26 @@ function CreateWizard() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold">What type of AI Voice Agent would you like to create?</h2>
-                <p className="text-sm text-muted-foreground">Select one or multiple. Each agent can wear several hats.</p>
+                <h2 className="text-xl font-semibold">
+                  What type of AI Voice Agent would you like to create?
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Select one or multiple. Each agent can wear several hats.
+                </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                 {agentTypes.map((t) => {
                   const active = selectedTypes.includes(t);
                   return (
-                    <button key={t} onClick={() => toggle(selectedTypes, setSelectedTypes, t)}
-                      className={`rounded-xl border p-4 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60 hover:border-border"}`}>
+                    <button
+                      key={t}
+                      onClick={() => toggle(selectedTypes, setSelectedTypes, t)}
+                      className={`rounded-xl border p-4 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60 hover:border-border"}`}
+                    >
                       <div className="flex items-center justify-between">
-                        <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15 text-primary"><Bot className="h-4 w-4" /></div>
+                        <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15 text-primary">
+                          <Bot className="h-4 w-4" />
+                        </div>
                         {active && <Check className="h-4 w-4 text-primary" />}
                       </div>
                       <div className="mt-3 font-medium">{t}</div>
@@ -507,14 +630,19 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Choose responsibilities</h2>
-                <p className="text-sm text-muted-foreground">What should this agent actually do on a call?</p>
+                <p className="text-sm text-muted-foreground">
+                  What should this agent actually do on a call?
+                </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {responsibilities.map((r) => {
                   const active = selectedResp.includes(r);
                   return (
-                    <button key={r} onClick={() => toggle(selectedResp, setSelectedResp, r)}
-                      className={`rounded-full border px-4 py-2 text-sm transition ${active ? "border-primary bg-primary/15 text-foreground" : "border-border/60 text-muted-foreground hover:border-border"}`}>
+                    <button
+                      key={r}
+                      onClick={() => toggle(selectedResp, setSelectedResp, r)}
+                      className={`rounded-full border px-4 py-2 text-sm transition ${active ? "border-primary bg-primary/15 text-foreground" : "border-border/60 text-muted-foreground hover:border-border"}`}
+                    >
                       {active && <Check className="mr-1.5 inline h-3.5 w-3.5 text-primary" />}
                       {r}
                     </button>
@@ -522,7 +650,10 @@ function CreateWizard() {
                 })}
               </div>
               <Field label="Custom responsibilities">
-                <Textarea rows={4} placeholder="E.g. Explain our loyalty program and offer a $50 credit for referrals." />
+                <Textarea
+                  rows={4}
+                  placeholder="E.g. Explain our loyalty program and offer a $50 credit for referrals."
+                />
               </Field>
             </div>
           )}
@@ -531,13 +662,19 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Upload your knowledge</h2>
-                <p className="text-sm text-muted-foreground">PDFs, docs, spreadsheets, FAQs, websites — anything you'd hand a new employee.</p>
+                <p className="text-sm text-muted-foreground">
+                  PDFs, docs, spreadsheets, FAQs, websites — anything you'd hand a new employee.
+                </p>
               </div>
               <div className="rounded-2xl border-2 border-dashed border-border/60 p-10 text-center transition hover:border-primary/50">
                 <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
                 <p className="mt-3 font-medium">Drop files here or click to upload</p>
-                <p className="text-xs text-muted-foreground">PDF, DOCX, TXT, CSV, XLSX, PNG · up to 50MB</p>
-                <Button variant="outline" className="mt-4">Browse files</Button>
+                <p className="text-xs text-muted-foreground">
+                  PDF, DOCX, TXT, CSV, XLSX, PNG · up to 50MB
+                </p>
+                <Button variant="outline" className="mt-4">
+                  Browse files
+                </Button>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {[
@@ -545,15 +682,23 @@ function CreateWizard() {
                   { n: "FAQ_Master.docx", s: "112 KB · ingested" },
                   { n: "Price_List.xlsx", s: "38 KB · processing" },
                 ].map((f) => (
-                  <div key={f.n} className="flex items-center justify-between rounded-xl border border-border/60 p-3 text-sm">
-                    <div className="min-w-0"><div className="truncate font-medium">{f.n}</div><div className="text-xs text-muted-foreground">{f.s}</div></div>
+                  <div
+                    key={f.n}
+                    className="flex items-center justify-between rounded-xl border border-border/60 p-3 text-sm"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">{f.n}</div>
+                      <div className="text-xs text-muted-foreground">{f.s}</div>
+                    </div>
                     <Badge variant="outline">Knowledge</Badge>
                   </div>
                 ))}
               </div>
               <div className="grid gap-3 md:grid-cols-4">
-                {["Paste text","Add Q&A","Import URL","Connect Notion"].map((a) => (
-                  <Button key={a} variant="outline"><Plus className="mr-2 h-4 w-4" /> {a}</Button>
+                {["Paste text", "Add Q&A", "Import URL", "Connect Notion"].map((a) => (
+                  <Button key={a} variant="outline">
+                    <Plus className="mr-2 h-4 w-4" /> {a}
+                  </Button>
                 ))}
               </div>
             </div>
@@ -563,13 +708,18 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Shape the personality</h2>
-                <p className="text-sm text-muted-foreground">Fine-tune how your agent sounds and behaves.</p>
+                <p className="text-sm text-muted-foreground">
+                  Fine-tune how your agent sounds and behaves.
+                </p>
               </div>
               <Field label="Voice tone">
                 <div className="flex flex-wrap gap-2">
                   {tones.map((t) => (
-                    <button key={t} onClick={() => setTone(t)}
-                      className={`rounded-full border px-4 py-1.5 text-sm ${tone === t ? "border-primary bg-primary/15" : "border-border/60 text-muted-foreground"}`}>
+                    <button
+                      key={t}
+                      onClick={() => setTone(t)}
+                      className={`rounded-full border px-4 py-1.5 text-sm ${tone === t ? "border-primary bg-primary/15" : "border-border/60 text-muted-foreground"}`}
+                    >
                       {t}
                     </button>
                   ))}
@@ -577,13 +727,28 @@ function CreateWizard() {
               </Field>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Speaking speed">
-                  <Select defaultValue="normal"><SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="slow">Slow</SelectItem><SelectItem value="normal">Normal</SelectItem><SelectItem value="fast">Fast</SelectItem></SelectContent>
+                  <Select defaultValue="normal">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="slow">Slow</SelectItem>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="fast">Fast</SelectItem>
+                    </SelectContent>
                   </Select>
                 </Field>
                 <Field label="Conversation style">
-                  <Select defaultValue="short"><SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="short">Short</SelectItem><SelectItem value="detailed">Detailed</SelectItem><SelectItem value="consultative">Consultative</SelectItem><SelectItem value="persuasive">Persuasive</SelectItem></SelectContent>
+                  <Select defaultValue="short">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="short">Short</SelectItem>
+                      <SelectItem value="detailed">Detailed</SelectItem>
+                      <SelectItem value="consultative">Consultative</SelectItem>
+                      <SelectItem value="persuasive">Persuasive</SelectItem>
+                    </SelectContent>
                   </Select>
                 </Field>
               </div>
@@ -600,37 +765,66 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Choose a voice</h2>
-                <p className="text-sm text-muted-foreground">Preview each voice — you can change it any time.</p>
+                <p className="text-sm text-muted-foreground">
+                  Preview each voice — you can change it any time.
+                </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                 {voices.map((v) => {
                   const active = voice === v.name;
                   return (
-                    <button key={v.name} onClick={() => setVoice(v.name)}
-                      className={`rounded-2xl border p-5 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60"}`}>
+                    <button
+                      key={v.name}
+                      onClick={() => setVoice(v.name)}
+                      className={`rounded-2xl border p-5 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60"}`}
+                    >
                       <div className="flex items-center justify-between">
-                        <div className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-primary/40 to-accent/40 text-lg font-semibold">{v.name[0]}</div>
-                        <Button size="icon" variant="ghost" className="h-8 w-8"><Play className="h-4 w-4" /></Button>
+                        <div className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-primary/40 to-accent/40 text-lg font-semibold">
+                          {v.name[0]}
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-8 w-8">
+                          <Play className="h-4 w-4" />
+                        </Button>
                       </div>
                       <div className="mt-3 font-semibold">{v.name}</div>
                       <div className="text-xs text-muted-foreground">{v.tag}</div>
-                      <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><Globe className="h-3 w-3" /> {v.accent}</div>
+                      <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                        <Globe className="h-3 w-3" /> {v.accent}
+                      </div>
                     </button>
                   );
                 })}
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Accent">
-                  <Select defaultValue="american"><SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="american">American</SelectItem><SelectItem value="british">British</SelectItem><SelectItem value="australian">Australian</SelectItem></SelectContent>
+                  <Select defaultValue="american">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="american">American</SelectItem>
+                      <SelectItem value="british">British</SelectItem>
+                      <SelectItem value="australian">Australian</SelectItem>
+                    </SelectContent>
                   </Select>
                 </Field>
                 <Field label="Language">
-                  <Select defaultValue="en"><SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Spanish</SelectItem><SelectItem value="fr">French</SelectItem></SelectContent>
+                  <Select defaultValue="en">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                    </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Voice clone (coming soon)"><Button variant="outline" disabled>Upload sample</Button></Field>
+                <Field label="Voice clone (coming soon)">
+                  <Button variant="outline" disabled>
+                    Upload sample
+                  </Button>
+                </Field>
               </div>
             </div>
           )}
@@ -639,14 +833,36 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Design the call flow</h2>
-                <p className="text-sm text-muted-foreground">Drag blocks onto the canvas and connect them.</p>
+                <p className="text-sm text-muted-foreground">
+                  Drag blocks onto the canvas and connect them.
+                </p>
               </div>
               <div className="grid gap-4 md:grid-cols-[200px_1fr]">
                 <Card className="glass p-3">
-                  <div className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Blocks</div>
+                  <div className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">
+                    Blocks
+                  </div>
                   <div className="space-y-1.5">
-                    {["Start Call","Greeting","Ask Question","Knowledge Lookup","Booking","Lead Qualification","Transfer","Send SMS","Webhook","CRM Lookup","Payment","End Call"].map(b => (
-                      <div key={b} className="cursor-grab rounded-lg border border-border/60 px-3 py-1.5 text-xs hover:border-primary/60">{b}</div>
+                    {[
+                      "Start Call",
+                      "Greeting",
+                      "Ask Question",
+                      "Knowledge Lookup",
+                      "Booking",
+                      "Lead Qualification",
+                      "Transfer",
+                      "Send SMS",
+                      "Webhook",
+                      "CRM Lookup",
+                      "Payment",
+                      "End Call",
+                    ].map((b) => (
+                      <div
+                        key={b}
+                        className="cursor-grab rounded-lg border border-border/60 px-3 py-1.5 text-xs hover:border-primary/60"
+                      >
+                        {b}
+                      </div>
                     ))}
                   </div>
                 </Card>
@@ -669,17 +885,47 @@ function CreateWizard() {
                 <p className="text-sm text-muted-foreground">Bring your own or buy a fresh one.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-4">
-                {["Twilio","Vapi","Retell","Bland AI","Plivo","Exotel","Telnyx","Custom SIP"].map(p => (
-                  <button key={p} className="rounded-xl border border-border/60 p-4 text-left hover:border-primary/50">
+                {[
+                  "Twilio",
+                  "Vapi",
+                  "Retell",
+                  "Bland AI",
+                  "Plivo",
+                  "Exotel",
+                  "Telnyx",
+                  "Custom SIP",
+                ].map((p) => (
+                  <button
+                    key={p}
+                    className="rounded-xl border border-border/60 p-4 text-left hover:border-primary/50"
+                  >
                     <div className="font-medium">{p}</div>
                     <div className="text-xs text-muted-foreground">Not connected</div>
                   </button>
                 ))}
               </div>
               <div className="grid gap-3 md:grid-cols-3">
-                <Card className="glass p-5"><div className="font-medium">Buy a new number</div><p className="mt-1 text-xs text-muted-foreground">From $2 / mo · 40+ countries</p><Button className="mt-3" variant="outline">Search numbers</Button></Card>
-                <Card className="glass p-5"><div className="font-medium">Connect existing</div><p className="mt-1 text-xs text-muted-foreground">SIP trunk or provider port</p><Button className="mt-3" variant="outline">Add number</Button></Card>
-                <Card className="glass p-5"><div className="font-medium">Forward business line</div><p className="mt-1 text-xs text-muted-foreground">Route overflow calls</p><Button className="mt-3" variant="outline">Set forwarding</Button></Card>
+                <Card className="glass p-5">
+                  <div className="font-medium">Buy a new number</div>
+                  <p className="mt-1 text-xs text-muted-foreground">From $2 / mo · 40+ countries</p>
+                  <Button className="mt-3" variant="outline">
+                    Search numbers
+                  </Button>
+                </Card>
+                <Card className="glass p-5">
+                  <div className="font-medium">Connect existing</div>
+                  <p className="mt-1 text-xs text-muted-foreground">SIP trunk or provider port</p>
+                  <Button className="mt-3" variant="outline">
+                    Add number
+                  </Button>
+                </Card>
+                <Card className="glass p-5">
+                  <div className="font-medium">Forward business line</div>
+                  <p className="mt-1 text-xs text-muted-foreground">Route overflow calls</p>
+                  <Button className="mt-3" variant="outline">
+                    Set forwarding
+                  </Button>
+                </Card>
               </div>
             </div>
           )}
@@ -688,15 +934,24 @@ function CreateWizard() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Your generated prompt</h2>
-                <p className="text-sm text-muted-foreground">Auto-generated from your business info, knowledge, and personality settings.</p>
+                <p className="text-sm text-muted-foreground">
+                  Auto-generated from your business info, knowledge, and personality settings.
+                </p>
               </div>
               <div className="overflow-hidden rounded-2xl border border-border/60 bg-[oklch(0.12_0.03_250)]">
                 <div className="flex items-center justify-between border-b border-border/60 px-4 py-2 text-xs">
                   <span className="font-mono text-muted-foreground">system_prompt.md</span>
-                  <div className="flex gap-2"><Button size="sm" variant="ghost">Copy</Button><Button size="sm" variant="ghost">Download</Button></div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="ghost">
+                      Copy
+                    </Button>
+                    <Button size="sm" variant="ghost">
+                      Download
+                    </Button>
+                  </div>
                 </div>
                 <pre className="overflow-auto p-5 font-mono text-xs leading-relaxed text-foreground/90">
-{`# ROLE
+                  {`# ROLE
 You are Aria, the AI Receptionist for ${businessName} — a modern
 practice in ${businessInfo.address || "your service area"} offering cosmetic, restorative, and
 preventive care.
@@ -727,7 +982,9 @@ If caller requests a human → warm transfer to reception.
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold">Review & deploy</h2>
-                <p className="text-sm text-muted-foreground">One last look before your agent goes live.</p>
+                <p className="text-sm text-muted-foreground">
+                  One last look before your agent goes live.
+                </p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <Summary label="Business" value={businessName} />
@@ -737,9 +994,14 @@ If caller requests a human → warm transfer to reception.
                 <Summary label="Knowledge" value="3 documents · 12 FAQs" />
                 <Summary label="Est. Monthly Usage" value="1,200 min · $79" />
               </div>
-              <Card className="p-6 text-center brand-glow" style={{ background: "var(--gradient-brand)" }}>
+              <Card
+                className="p-6 text-center brand-glow"
+                style={{ background: "var(--gradient-brand)" }}
+              >
                 <div className="text-lg font-semibold text-brand-foreground">Ready to go live</div>
-                <p className="mt-1 text-sm text-brand-foreground/80">Deploying takes about 30 seconds. Your agent will start answering immediately.</p>
+                <p className="mt-1 text-sm text-brand-foreground/80">
+                  Deploying takes about 30 seconds. Your agent will start answering immediately.
+                </p>
                 <Button size="lg" variant="secondary" className="mt-4" onClick={handleDeploy}>
                   <Rocket className="mr-2 h-4 w-4" /> Deploy agent
                 </Button>
@@ -748,27 +1010,50 @@ If caller requests a human → warm transfer to reception.
           )}
 
           <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
-            <Button variant="outline" onClick={prev} disabled={step === 1 || savingDraft || savingBusinessInfo}><ChevronLeft className="mr-1 h-4 w-4" /> Back</Button>
+            <Button
+              variant="outline"
+              onClick={prev}
+              disabled={step === 1 || savingDraft}
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" /> Back
+            </Button>
             <div className="text-xs text-muted-foreground">Step {step} of 10</div>
-            <Button onClick={handleNext} disabled={step === 10 || savingDraft || savingBusinessInfo}>
-              {savingDraft || savingBusinessInfo ? "Saving…" : "Continue"} <ChevronRight className="ml-1 h-4 w-4" />
+            <Button
+              onClick={handleNext}
+            >
+              Continue <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
         </Card>
       </div>
-
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1.5"><Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>{children}</div>;
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
 }
 
-function SliderRow({ label, v, setV }: { label: string; v: number[]; setV: (v: number[]) => void }) {
+function SliderRow({
+  label,
+  v,
+  setV,
+}: {
+  label: string;
+  v: number[];
+  setV: (v: number[]) => void;
+}) {
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between text-sm"><span>{label}</span><span className="text-muted-foreground">{v[0]}</span></div>
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <span>{label}</span>
+        <span className="text-muted-foreground">{v[0]}</span>
+      </div>
       <Slider value={v} onValueChange={setV} max={100} step={1} />
     </div>
   );
@@ -783,10 +1068,24 @@ function Summary({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FlowNode({ className, title, color }: { className: string; title: string; color: "primary" | "accent" | "muted" }) {
-  const colorMap = { primary: "border-primary/60 bg-primary/15", accent: "border-accent/60 bg-accent/15", muted: "border-border bg-muted" };
+function FlowNode({
+  className,
+  title,
+  color,
+}: {
+  className: string;
+  title: string;
+  color: "primary" | "accent" | "muted";
+}) {
+  const colorMap = {
+    primary: "border-primary/60 bg-primary/15",
+    accent: "border-accent/60 bg-accent/15",
+    muted: "border-border bg-muted",
+  };
   return (
-    <div className={`absolute w-40 rounded-xl border p-3 text-xs backdrop-blur ${colorMap[color]} ${className}`}>
+    <div
+      className={`absolute w-40 rounded-xl border p-3 text-xs backdrop-blur ${colorMap[color]} ${className}`}
+    >
       <div className="font-medium">{title}</div>
       <div className="mt-1 text-[10px] text-muted-foreground">Click to configure</div>
     </div>

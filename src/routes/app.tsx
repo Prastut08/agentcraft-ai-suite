@@ -1,10 +1,31 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Plus, Bot, Phone, BookOpen, BarChart3,
-  MessagesSquare, ListChecks, Puzzle, CreditCard, Settings,
-  Waves, Search, Bell, Sparkles, ChevronLeft, ChevronRight,
-  Command, Activity, TrendingUp, Zap, Shield, Sun, Moon, LogOut,
+  LayoutDashboard,
+  Plus,
+  Bot,
+  Phone,
+  BookOpen,
+  BarChart3,
+  MessagesSquare,
+  ListChecks,
+  Puzzle,
+  CreditCard,
+  Settings,
+  Waves,
+  Search,
+  Bell,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Command,
+  Activity,
+  TrendingUp,
+  Zap,
+  Shield,
+  Sun,
+  Moon,
+  LogOut,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,7 +39,13 @@ export const Route = createFileRoute("/app")({
   component: AppRoute,
 });
 
-type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; accent?: boolean; badge?: string };
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  accent?: boolean;
+  badge?: string;
+};
 
 const navMain: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -37,7 +64,15 @@ const navSystem: NavItem[] = [
   { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; collapsed: boolean }) {
+function NavLink({
+  item,
+  active,
+  collapsed,
+}: {
+  item: NavItem;
+  active: boolean;
+  collapsed: boolean;
+}) {
   return (
     <Link
       to={item.to as string as "/app/dashboard"}
@@ -46,21 +81,21 @@ function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; 
         active
           ? "nav-active text-foreground"
           : item.accent
-          ? "text-primary hover:bg-primary/8 hover:text-primary"
-          : "text-sidebar-foreground/60 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+            ? "text-primary hover:bg-primary/8 hover:text-primary"
+            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
       }`}
     >
       {/* Active left-border indicator */}
       {active && (
         <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-primary" />
       )}
-      <item.icon className={`shrink-0 transition-transform duration-200 group-hover:scale-105 ${collapsed ? "h-5 w-5" : "h-4 w-4"}`} />
+      <item.icon
+        className={`shrink-0 transition-transform duration-200 group-hover:scale-105 ${collapsed ? "h-5 w-5" : "h-4 w-4"}`}
+      />
       {!collapsed && (
         <>
           <span className="flex-1 truncate">{item.label}</span>
-          {item.accent && !active && (
-            <Sparkles className="h-3 w-3 text-primary/70" />
-          )}
+          {item.accent && !active && <Sparkles className="h-3 w-3 text-primary/70" />}
           {item.badge && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
               {item.badge}
@@ -87,31 +122,49 @@ function AppRoute() {
   }
 
   if (!user) {
-    return <AuthScreen compact reason="Sign in to access your dashboard, agents, logs, and settings." />;
+    return (
+      <AuthScreen compact reason="Sign in to access your dashboard, agents, logs, and settings." />
+    );
   }
 
   return (
     <AppLayout
       userName={profile?.displayName ?? user.displayName ?? user.email ?? "Workspace user"}
       userEmail={user.email ?? ""}
-      workspaceName={profile?.businessName ?? profile?.displayName ?? user.displayName ?? user.email ?? "Workspace"}
+      workspaceName={
+        profile?.businessName ??
+        profile?.displayName ??
+        user.displayName ??
+        user.email ??
+        "Workspace"
+      }
     />
   );
 }
 
-function AppLayout({ userName, userEmail, workspaceName }: { userName: string; userEmail: string; workspaceName: string }) {
+function AppLayout({
+  userName,
+  userEmail,
+  workspaceName,
+}: {
+  userName: string;
+  userEmail: string;
+  workspaceName: string;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
-  const initials = userName
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase() || "U";
+  const navigate = useNavigate();
+  const initials =
+    userName
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "U";
 
   useEffect(() => {
     if (isDark) {
@@ -132,7 +185,9 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
         }`}
       >
         {/* Logo */}
-        <div className={`flex h-16 items-center border-b border-sidebar-border px-4 ${collapsed ? "justify-center" : "gap-3"}`}>
+        <div
+          className={`flex h-16 items-center border-b border-sidebar-border px-4 ${collapsed ? "justify-center" : "gap-3"}`}
+        >
           <Link to="/" className="flex items-center gap-3 min-w-0">
             <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-md">
               <Waves className="h-5 w-5" />
@@ -141,9 +196,7 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <div className="text-sm font-bold leading-none text-foreground">
-                  VoiceForge AI
-                </div>
+                <div className="text-sm font-bold leading-none text-foreground">VoiceForge AI</div>
                 <div className="mt-0.5 text-[10px] text-muted-foreground">Enterprise Platform</div>
               </div>
             )}
@@ -154,8 +207,12 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
         {!collapsed && (
           <div className="mx-3 mt-3">
             <button className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2 text-left text-xs transition hover:bg-sidebar-accent">
-              <div className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-[10px] font-bold text-primary">B</div>
-              <span className="flex-1 truncate font-medium text-sidebar-foreground/80">{workspaceName}</span>
+              <div className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-[10px] font-bold text-primary">
+                B
+              </div>
+              <span className="flex-1 truncate font-medium text-sidebar-foreground/80">
+                {workspaceName}
+              </span>
               <ChevronRight className="h-3 w-3 text-muted-foreground" />
             </button>
           </div>
@@ -169,7 +226,9 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
             </div>
           )}
           {navMain.map((item) => {
-            const active = pathname === item.to || (item.to !== "/app/dashboard" && pathname.startsWith(item.to));
+            const active =
+              pathname === item.to ||
+              (item.to !== "/app/dashboard" && pathname.startsWith(item.to));
             return <NavLink key={item.to} item={item} active={active} collapsed={collapsed} />;
           })}
 
@@ -190,8 +249,13 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
           {!collapsed && (
             <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/30 p-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-semibold text-sidebar-foreground/80">Monthly Usage</span>
-                <Badge variant="outline" className="h-4 border-primary/30 bg-primary/10 px-1.5 text-[9px] text-primary">
+                <span className="text-xs font-semibold text-sidebar-foreground/80">
+                  Monthly Usage
+                </span>
+                <Badge
+                  variant="outline"
+                  className="h-4 border-primary/30 bg-primary/10 px-1.5 text-[9px] text-primary"
+                >
                   Growth
                 </Badge>
               </div>
@@ -205,12 +269,16 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
                   style={{ width: `${usagePercent}%` }}
                 />
               </div>
-              <div className="mt-1 text-[10px] text-muted-foreground">{100 - usagePercent}% remaining this month</div>
+              <div className="mt-1 text-[10px] text-muted-foreground">
+                {100 - usagePercent}% remaining this month
+              </div>
             </div>
           )}
 
           {/* User profile */}
-          <button className={`flex w-full items-center gap-2.5 rounded-xl p-2 transition hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}>
+          <button
+            className={`flex w-full items-center gap-2.5 rounded-xl p-2 transition hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
+          >
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarFallback className="bg-surface-2 border border-border text-xs font-semibold text-foreground">
                 {initials}
@@ -218,8 +286,12 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
             </Avatar>
             {!collapsed && (
               <div className="min-w-0 flex-1 text-left">
-                <div className="truncate text-xs font-semibold text-sidebar-foreground">{userName}</div>
-                <div className="truncate text-[10px] text-muted-foreground">{userEmail || "Authenticated workspace user"}</div>
+                <div className="truncate text-xs font-semibold text-sidebar-foreground">
+                  {userName}
+                </div>
+                <div className="truncate text-[10px] text-muted-foreground">
+                  {userEmail || "Authenticated workspace user"}
+                </div>
               </div>
             )}
           </button>
@@ -232,6 +304,7 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
               setSigningOut(true);
               try {
                 await signOutUser();
+                navigate({ to: "/", replace: true });
               } finally {
                 setSigningOut(false);
               }
@@ -264,8 +337,12 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
               className="h-9 border-border/50 bg-surface/60 pl-9 text-sm placeholder:text-muted-foreground/60 focus:bg-surface"
             />
             <div className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-1 sm:flex">
-              <kbd className="flex h-5 items-center rounded border border-border/70 bg-muted px-1.5 font-mono text-[9px] text-muted-foreground">⌘</kbd>
-              <kbd className="flex h-5 items-center rounded border border-border/70 bg-muted px-1.5 font-mono text-[9px] text-muted-foreground">K</kbd>
+              <kbd className="flex h-5 items-center rounded border border-border/70 bg-muted px-1.5 font-mono text-[9px] text-muted-foreground">
+                ⌘
+              </kbd>
+              <kbd className="flex h-5 items-center rounded border border-border/70 bg-muted px-1.5 font-mono text-[9px] text-muted-foreground">
+                K
+              </kbd>
             </div>
           </div>
 
@@ -281,10 +358,18 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
               variant="outline"
               size="icon"
               className="h-9 w-9 border-border/60 text-muted-foreground hover:text-foreground"
-              title={isDark ? "Switch to Light Mode (Wheat & Brown)" : "Switch to Dark Mode (Black & Gray)"}
+              title={
+                isDark
+                  ? "Switch to Light Mode (Wheat & Brown)"
+                  : "Switch to Dark Mode (Black & Gray)"
+              }
               onClick={() => setIsDark((d) => !d)}
             >
-              {isDark ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-foreground" />}
+              {isDark ? (
+                <Sun className="h-4 w-4 text-amber-500" />
+              ) : (
+                <Moon className="h-4 w-4 text-foreground" />
+              )}
             </Button>
 
             {/* Notifications */}
@@ -307,16 +392,38 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
                   </div>
                   <div className="divide-y divide-border/40">
                     {[
-                      { icon: Activity, title: "Agent Aria is offline", time: "2m ago", type: "warn" },
-                      { icon: TrendingUp, title: "New milestone: 1,000 calls handled", time: "1h ago", type: "success" },
-                      { icon: Zap, title: "Knowledge base re-embedded", time: "2h ago", type: "info" },
+                      {
+                        icon: Activity,
+                        title: "Agent Aria is offline",
+                        time: "2m ago",
+                        type: "warn",
+                      },
+                      {
+                        icon: TrendingUp,
+                        title: "New milestone: 1,000 calls handled",
+                        time: "1h ago",
+                        type: "success",
+                      },
+                      {
+                        icon: Zap,
+                        title: "Knowledge base re-embedded",
+                        time: "2h ago",
+                        type: "info",
+                      },
                     ].map((n, i) => (
-                      <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer">
-                        <div className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
-                          n.type === "warn" ? "bg-destructive/15 text-destructive"
-                          : n.type === "success" ? "bg-success/15 text-success"
-                          : "bg-primary/15 text-primary"
-                        }`}>
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 cursor-pointer"
+                      >
+                        <div
+                          className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
+                            n.type === "warn"
+                              ? "bg-destructive/15 text-destructive"
+                              : n.type === "success"
+                                ? "bg-success/15 text-success"
+                                : "bg-primary/15 text-primary"
+                          }`}
+                        >
                           <n.icon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -327,7 +434,9 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
                     ))}
                   </div>
                   <div className="border-t border-border/50 px-4 py-2.5">
-                    <button className="text-xs font-medium text-primary hover:underline">View all notifications</button>
+                    <button className="text-xs font-medium text-primary hover:underline">
+                      View all notifications
+                    </button>
                   </div>
                 </div>
               )}
@@ -335,7 +444,10 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
 
             {/* Quick create */}
             <Link to="/app/create">
-              <Button size="sm" className="h-9 gap-1.5 bg-primary text-primary-foreground font-medium shadow-md transition">
+              <Button
+                size="sm"
+                className="h-9 gap-1.5 bg-primary text-primary-foreground font-medium shadow-md transition"
+              >
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">New Agent</span>
               </Button>
@@ -357,12 +469,7 @@ function AppLayout({ userName, userEmail, workspaceName }: { userName: string; u
       </div>
 
       {/* Click-away for notifications */}
-      {notifOpen && (
-        <div
-          className="fixed inset-0 z-20"
-          onClick={() => setNotifOpen(false)}
-        />
-      )}
+      {notifOpen && <div className="fixed inset-0 z-20" onClick={() => setNotifOpen(false)} />}
     </div>
   );
 }
