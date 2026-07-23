@@ -36,7 +36,7 @@ import {
   Globe,
 } from "lucide-react";
 import { toast } from "sonner";
-import { doc, serverTimestamp, setDoc, collection } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc, collection } from "firebase/firestore";
 import { onSnapshot, type DocumentData } from "firebase/firestore";
 
 import { useAuth } from "@/lib/auth-context";
@@ -179,6 +179,14 @@ function CreateWizard() {
   };
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo>(initialBusinessInfo);
   const businessInfoRef = useRef<BusinessInfo>(initialBusinessInfo);
+  const selectedTypesRef = useRef<string[]>(["AI Receptionist"]);
+  const selectedRespRef = useRef<string[]>(["Answer Calls", "Book Appointments"]);
+  const [personality, setPersonality] = useState({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70 });
+  const personalityRef = useRef({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70 });
+  const [callFlow, setCallFlow] = useState<any>(null);
+  const callFlowRef = useRef<any>(null);
+  const [prompt, setPrompt] = useState("");
+  const promptRef = useRef("");
 
   const progress = (step / 10) * 100;
 
@@ -186,11 +194,51 @@ function CreateWizard() {
   const businessDescription =
     businessInfo.businessDescription.trim() ||
     "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
-  const toggle = (arr: string[], set: (v: string[]) => void, v: string) =>
-    set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  const toggle = (arr: string[], set: (v: string[]) => void, ref: { current: string[] }, v: string) => {
+    const next = arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+    set(next);
+    ref.current = next;
+    if (user) {
+      setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        { agentType: next, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+        .then(() => console.log("[create] saved agentType:", next))
+        .catch((error) => console.error("[create] failed to save agentType:", error));
+    }
+  };
 
   const next = () => setStep((s) => Math.min(10, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
+
+  const updatePersonality = useCallback((changes: Partial<{ tone: string; voice: string; humor: number; empathy: number }>) => {
+    setPersonality((prev) => {
+      const next = { ...prev, ...changes };
+      personalityRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const setCallFlowState = useCallback((next: any) => {
+    callFlowRef.current = next;
+    setCallFlow(next);
+  }, []);
+
+  const setPromptState = useCallback((next: string) => {
+    promptRef.current = next;
+    setPrompt(next);
+  }, []);
+
+  const setHumorState = useCallback((next: number[]) => {
+    personalityRef.current = { ...personalityRef.current, humor: next[0] };
+    setHumor(next);
+  }, []);
+
+  const setEmpathyState = useCallback((next: number[]) => {
+    personalityRef.current = { ...personalityRef.current, empathy: next[0] };
+    setEmpathy(next);
+  }, []);
 
   useEffect(() => {
     if (businessInfo.businessName.trim().length === 0 && profile?.businessName) {
@@ -213,16 +261,20 @@ function CreateWizard() {
 
     const draftRef = doc(db, "users", user.uid, "createAgentDrafts", "current");
     const unsubscribe = onSnapshot(draftRef, (snapshot) => {
-      const data = snapshot.data() as DocumentData | undefined;
-      if (!data) {
-        hydratedDraftRef.current = true;
-        stepHydratedRef.current = true;
+      if (hydratedDraftRef.current) {
         return;
       }
 
-      if (typeof data.step === "number" && !stepHydratedRef.current) {
+      hydratedDraftRef.current = true;
+      stepHydratedRef.current = true;
+
+      const data = snapshot.data() as DocumentData | undefined;
+      if (!data) {
+        return;
+      }
+
+      if (typeof data.step === "number") {
         setStep(data.step);
-        stepHydratedRef.current = true;
       }
 
       if (data.businessInfo && typeof data.businessInfo === "object") {
@@ -238,31 +290,31 @@ function CreateWizard() {
 
       if (Array.isArray(data.agentType)) {
         setSelectedTypes(data.agentType.filter((item): item is string => typeof item === "string"));
+        selectedTypesRef.current = data.agentType.filter((item): item is string => typeof item === "string");
       }
 
       if (Array.isArray(data.responsibilities)) {
         setSelectedResp(
           data.responsibilities.filter((item): item is string => typeof item === "string"),
         );
+        selectedRespRef.current = data.responsibilities.filter((item): item is string => typeof item === "string");
       }
 
       if (typeof data.personality?.tone === "string") {
-        setTone(data.personality.tone);
+        updatePersonality({ tone: data.personality.tone });
       }
 
       if (typeof data.personality?.voice === "string") {
-        setVoice(data.personality.voice);
+        updatePersonality({ voice: data.personality.voice });
       }
 
       if (typeof data.personality?.humor === "number") {
-        setHumor([data.personality.humor]);
+        setHumorState([data.personality.humor]);
       }
 
       if (typeof data.personality?.empathy === "number") {
-        setEmpathy([data.personality.empathy]);
+        setEmpathyState([data.personality.empathy]);
       }
-
-      hydratedDraftRef.current = true;
     });
 
     return unsubscribe;
@@ -294,7 +346,10 @@ function CreateWizard() {
         await setDoc(
           doc(db, "users", user.uid, "createAgentDrafts", "current"),
           {
-            businessInfo: payload.businessInfo,
+            step: 1,
+            sections: {
+              businessInfo: payload.businessInfo,
+            },
             updatedAt: serverTimestamp(),
           },
           { merge: true },
@@ -325,21 +380,22 @@ function CreateWizard() {
 
     const draft = {
       step,
-      businessInfo: {
-        ...currentBusinessInfo,
-        businessName: nextBusinessName,
-        businessDescription: nextBusinessDescription,
-      },
-      agentType: selectedTypes,
-      responsibilities: selectedResp,
-      personality: {
-        tone,
-        voice,
-        humor: humor[0],
-        empathy: empathy[0],
+      sections: {
+        businessInfo: {
+          ...currentBusinessInfo,
+          businessName: nextBusinessName,
+          businessDescription: nextBusinessDescription,
+        },
+        agentType: selectedTypesRef.current,
+        responsibilities: selectedRespRef.current,
+        personality: personalityRef.current,
+        callFlow: callFlowRef.current,
+        prompt: promptRef.current,
       },
       updatedAt: serverTimestamp(),
     };
+
+    console.log("[create] saveDraft writing sections:", Object.keys(draft.sections));
 
     setSavingDraft(true);
     try {
@@ -347,7 +403,7 @@ function CreateWizard() {
         doc(db, "users", user.uid),
         {
           businessName: nextBusinessName,
-          businessInfo: draft.businessInfo,
+          businessInfo: draft.sections.businessInfo,
           updatedAt: serverTimestamp(),
         },
         { merge: true },
@@ -356,6 +412,7 @@ function CreateWizard() {
       await setDoc(doc(db, "users", user.uid, "createAgentDrafts", "current"), draft, {
         merge: true,
       });
+      console.log("[create] saveDraft success");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to save your draft right now.";
@@ -365,7 +422,7 @@ function CreateWizard() {
     } finally {
       setSavingDraft(false);
     }
-  }, [user, step, selectedTypes, selectedResp, tone, voice, humor, empathy]);
+  }, [user, step]);
 
   const updateBusinessInfo = useCallback(
     (changes: Partial<BusinessInfo>) => {
@@ -390,11 +447,18 @@ function CreateWizard() {
     [saveBusinessInfo],
   );
 
-  async function handleNext() {
-    if (step === 1) {
-      await saveBusinessInfo();
-    }
-    next();
+  function handleNext() {
+    console.log("[create] handleNext called, step:", step);
+    const savePromise = step === 1 ? saveBusinessInfo() : saveDraft();
+    savePromise
+      .then(() => {
+        console.log("[create] save before continue SUCCESS");
+        next();
+      })
+      .catch((error) => {
+        console.error("[create] save before continue FAILED:", error);
+        next();
+      });
   }
 
   async function handleDeploy() {
@@ -472,6 +536,72 @@ function CreateWizard() {
 
     return () => window.clearTimeout(timer);
   }, [saveDraft, user]);
+
+  useEffect(() => {
+    if (!user || !hydratedDraftRef.current) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        { responsibilities: selectedRespRef.current },
+        { merge: true },
+      ).catch((error) => console.error("Autosave responsibilities failed", error));
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [user, selectedResp]);
+
+  useEffect(() => {
+    if (!user || !hydratedDraftRef.current) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        { personality: personalityRef.current },
+        { merge: true },
+      ).catch((error) => console.error("Autosave personality failed", error));
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [user, personality]);
+
+  useEffect(() => {
+    if (!user || !hydratedDraftRef.current || personalityRef.current.voice === voice) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      personalityRef.current = { ...personalityRef.current, voice };
+      setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        { personality: personalityRef.current },
+        { merge: true },
+      ).catch((error) => console.error("Autosave voice failed", error));
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [user, voice]);
+
+  useEffect(() => {
+    if (!user || !hydratedDraftRef.current || promptRef.current === prompt) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      promptRef.current = prompt;
+      setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        { prompt },
+        { merge: true },
+      ).catch((error) => console.error("Autosave prompt failed", error));
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [user, prompt]);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -659,7 +789,7 @@ function CreateWizard() {
                   return (
                     <button
                       key={t}
-                      onClick={() => toggle(selectedTypes, setSelectedTypes, t)}
+                      onClick={() => toggle(selectedTypes, setSelectedTypes, selectedTypesRef, t)}
                       className={`rounded-xl border p-4 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60 hover:border-border"}`}
                     >
                       <div className="flex items-center justify-between">
@@ -690,7 +820,7 @@ function CreateWizard() {
                   return (
                     <button
                       key={r}
-                      onClick={() => toggle(selectedResp, setSelectedResp, r)}
+                      onClick={() => toggle(selectedResp, setSelectedResp, selectedRespRef, r)}
                       className={`rounded-full border px-4 py-2 text-sm transition ${active ? "border-primary bg-primary/15 text-foreground" : "border-border/60 text-muted-foreground hover:border-border"}`}
                     >
                       {active && <Check className="mr-1.5 inline h-3.5 w-3.5 text-primary" />}
@@ -767,7 +897,7 @@ function CreateWizard() {
                   {tones.map((t) => (
                     <button
                       key={t}
-                      onClick={() => setTone(t)}
+                      onClick={() => updatePersonality({ tone: t })}
                       className={`rounded-full border px-4 py-1.5 text-sm ${tone === t ? "border-primary bg-primary/15" : "border-border/60 text-muted-foreground"}`}
                     >
                       {t}
@@ -803,8 +933,8 @@ function CreateWizard() {
                 </Field>
               </div>
               <div className="space-y-5">
-                <SliderRow label="Humor" v={humor} setV={setHumor} />
-                <SliderRow label="Empathy" v={empathy} setV={setEmpathy} />
+                <SliderRow label="Humor" v={humor} setV={setHumorState} />
+                <SliderRow label="Empathy" v={empathy} setV={setEmpathyState} />
                 <SliderRow label="Professionalism" v={[85]} setV={() => {}} />
                 <SliderRow label="Confidence" v={[75]} setV={() => {}} />
               </div>
@@ -825,7 +955,7 @@ function CreateWizard() {
                   return (
                     <button
                       key={v.name}
-                      onClick={() => setVoice(v.name)}
+                      onClick={() => updatePersonality({ voice: v.name })}
                       className={`rounded-2xl border p-5 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60"}`}
                     >
                       <div className="flex items-center justify-between">
