@@ -6,12 +6,78 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
   component: Settings,
 });
 
 function Settings() {
+  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    businessName: "",
+    website: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      try {
+        const docSnap = await getDoc(doc(db, "users", user.uid));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const info = data.businessInfo || {};
+          setForm({
+            businessName: data.businessName || info.businessName || "",
+            website: info.website || "",
+            email: info.email || "",
+            phone: info.phone || info.phoneNumber || "",
+            address: info.address || "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load settings from database:", err);
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          businessName: form.businessName,
+          businessInfo: {
+            businessName: form.businessName,
+            website: form.website,
+            email: form.email,
+            phone: form.phone,
+            phoneNumber: form.phone,
+            address: form.address,
+          },
+        },
+        { merge: true }
+      );
+      toast.success("Business profile saved successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -35,48 +101,55 @@ function Settings() {
           <Card className="glass p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <F label="Business name">
-                <Input defaultValue="Bright Dental" />
+                <Input
+                  value={form.businessName}
+                  onChange={(e) => setForm({ ...form, businessName: e.target.value })}
+                  placeholder="E.g., Bright Dental"
+                />
               </F>
               <F label="Website">
-                <Input defaultValue="https://brightdental.com" />
+                <Input
+                  value={form.website}
+                  onChange={(e) => setForm({ ...form, website: e.target.value })}
+                  placeholder="https://example.com"
+                />
               </F>
               <F label="Email">
-                <Input defaultValue="hello@brightdental.com" />
+                <Input
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="contact@example.com"
+                />
               </F>
               <F label="Phone">
-                <Input defaultValue="+1 (415) 555 0100" />
+                <Input
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="+1 (555) 000-0000"
+                />
               </F>
               <div className="md:col-span-2">
                 <F label="Address">
-                  <Input defaultValue="123 Market St, San Francisco, CA" />
+                  <Input
+                    value={form.address}
+                    onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    placeholder="123 Main St, City, State"
+                  />
                 </F>
               </div>
             </div>
             <div className="mt-6 flex justify-end">
-              <Button>Save changes</Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save changes"}
+              </Button>
             </div>
           </Card>
         </TabsContent>
 
         <TabsContent value="team" className="mt-6">
           <Card className="glass p-6">
-            <div className="space-y-3">
-              {[
-                { n: "Jamie Doe", e: "jamie@brightdental.com", r: "Owner" },
-                { n: "Alex Rivera", e: "alex@brightdental.com", r: "Admin" },
-                { n: "Priya Shah", e: "priya@brightdental.com", r: "Agent Manager" },
-              ].map((m) => (
-                <div
-                  key={m.e}
-                  className="flex items-center justify-between rounded-xl border border-border/60 p-3"
-                >
-                  <div>
-                    <div className="font-medium">{m.n}</div>
-                    <div className="text-xs text-muted-foreground">{m.e}</div>
-                  </div>
-                  <Badge variant="outline">{m.r}</Badge>
-                </div>
-              ))}
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No team members yet
             </div>
             <Button className="mt-4">Invite teammate</Button>
           </Card>
@@ -86,15 +159,12 @@ function Settings() {
           <Card className="glass p-6">
             <div className="rounded-xl border border-border/60 p-4 font-mono text-sm">
               <div className="flex items-center justify-between">
-                <span>vf_live_••••••••••••••7c2a</span>
+                <span>No API key generated</span>
                 <Button size="sm" variant="outline">
-                  Reveal
+                  Generate new key
                 </Button>
               </div>
             </div>
-            <Button className="mt-4" variant="outline">
-              Generate new key
-            </Button>
           </Card>
         </TabsContent>
 
@@ -145,17 +215,8 @@ function Settings() {
 
         <TabsContent value="audit" className="mt-6">
           <Card className="glass p-6">
-            <div className="space-y-2 font-mono text-xs">
-              {[
-                "2026-12-18 09:14 — jamie@… deployed agent 'Aria'",
-                "2026-12-18 08:52 — alex@… updated phone number +1 415 555 0100",
-                "2026-12-17 22:03 — system re-embedded knowledge base",
-                "2026-12-17 15:41 — priya@… invited teammate maya@brightdental.com",
-              ].map((l) => (
-                <div key={l} className="rounded-md bg-muted/40 px-3 py-2">
-                  {l}
-                </div>
-              ))}
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No activity yet
             </div>
           </Card>
         </TabsContent>

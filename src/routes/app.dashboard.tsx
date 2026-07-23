@@ -37,121 +37,76 @@ export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
 });
 
-const callsData = Array.from({ length: 14 }, (_, i) => ({
-  day: `${i + 1}`,
-  calls: 40 + Math.round(Math.sin(i / 2) * 20 + Math.random() * 30 + i * 3),
-  booked: 10 + Math.round(Math.cos(i / 3) * 6 + Math.random() * 8 + i),
-}));
+const callsData: { day: string; calls: number; booked: number }[] = [];
 
 const stats = [
   {
     label: "Total Calls",
-    value: "2,847",
-    delta: "+12.4%",
+    value: "—",
+    delta: "No data",
     trend: "up",
     icon: Phone,
-    color: "primary",
+    color: "muted",
   },
   {
     label: "Active Agents",
-    value: "6",
-    delta: "+2 this week",
+    value: "0",
+    delta: "No agents yet",
     trend: "up",
     icon: Bot,
-    color: "primary",
+    color: "muted",
   },
   {
     label: "Appointments",
-    value: "412",
-    delta: "+22%",
+    value: "—",
+    delta: "No data",
     trend: "up",
     icon: CalendarCheck,
-    color: "success",
+    color: "muted",
   },
   {
     label: "Revenue Impact",
-    value: "$48.2k",
-    delta: "+31%",
+    value: "—",
+    delta: "No data",
     trend: "up",
     icon: DollarSign,
-    color: "success",
+    color: "muted",
   },
   {
     label: "Missed Calls",
-    value: "18",
-    delta: "-38%",
+    value: "—",
+    delta: "No data",
     trend: "down",
     icon: PhoneMissed,
-    color: "accent",
+    color: "muted",
   },
   {
     label: "Avg Duration",
-    value: "3m 42s",
-    delta: "+8s",
+    value: "—",
+    delta: "No data",
     trend: "up",
     icon: Clock,
     color: "muted",
   },
   {
     label: "Lead Conversion",
-    value: "34.7%",
-    delta: "+4.1pts",
+    value: "—",
+    delta: "No data",
     trend: "up",
     icon: TrendingUp,
-    color: "primary",
+    color: "muted",
   },
   {
     label: "CSAT Score",
-    value: "4.8 / 5",
-    delta: "+0.2",
+    value: "—",
+    delta: "No data",
     trend: "up",
     icon: Users,
-    color: "success",
+    color: "muted",
   },
 ];
 
-const recent = [
-  {
-    name: "Sarah Kim",
-    agent: "Aria",
-    role: "Receptionist",
-    outcome: "Appointment booked",
-    time: "2m ago",
-    status: "success",
-  },
-  {
-    name: "+1 (415) 555 0132",
-    agent: "Milo",
-    role: "Sales",
-    outcome: "Qualified lead — hot",
-    time: "8m ago",
-    status: "success",
-  },
-  {
-    name: "Rajiv Menon",
-    agent: "Nova",
-    role: "Support",
-    outcome: "Escalated to human",
-    time: "22m ago",
-    status: "warn",
-  },
-  {
-    name: "+44 20 7946 0958",
-    agent: "Aria",
-    role: "FAQ",
-    outcome: "Resolved",
-    time: "41m ago",
-    status: "success",
-  },
-  {
-    name: "Anonymous",
-    agent: "Aria",
-    role: "Receptionist",
-    outcome: "Voicemail left",
-    time: "1h ago",
-    status: "muted",
-  },
-];
+const recent: { name: string; agent: string; role: string; outcome: string; time: string; status: string }[] = [];
 
 const quickActions = [
   { label: "Create Agent", icon: Plus, to: "/app/create", color: "primary" },
@@ -238,16 +193,11 @@ function Dashboard() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-success/30 bg-success/15">
-              <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-            </div>
-            <span className="text-xs font-medium text-success">6 agents live · Real-time</span>
+            <span className="text-xs font-medium text-success">Dashboard</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, Jamie</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-            Your voice workforce handled{" "}
-            <span className="font-semibold text-foreground">128 calls today</span> — 94% resolved
-            without human intervention.
+            Overview of your AI voice workforce.
           </p>
         </div>
         <div className="flex gap-2">
@@ -358,38 +308,47 @@ function Dashboard() {
               View all <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="space-y-1">
-            {recent.map((r) => (
-              <div
-                key={r.time}
-                className="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-muted/30 cursor-pointer"
-              >
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-surface-2 text-xs font-medium">
-                    {r.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-semibold">{r.name}</div>
-                  <div className="truncate text-[11px] text-muted-foreground">
-                    {r.agent} · {r.outcome}
+          {recent.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Conversations will appear here once your agents start handling calls.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {recent.map((r) => (
+                <div
+                  key={r.time}
+                  className="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-muted/30 cursor-pointer"
+                >
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarFallback className="bg-surface-2 text-xs font-medium">
+                      {r.name.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-semibold">{r.name}</div>
+                    <div className="truncate text-[11px] text-muted-foreground">
+                      {r.agent} · {r.outcome}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-[10px] text-muted-foreground">{r.time}</span>
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        r.status === "success"
+                          ? "bg-success"
+                          : r.status === "warn"
+                            ? "bg-warning"
+                            : "bg-muted-foreground/40"
+                      }`}
+                    />
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-[10px] text-muted-foreground">{r.time}</span>
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      r.status === "success"
-                        ? "bg-success"
-                        : r.status === "warn"
-                          ? "bg-warning"
-                          : "bg-muted-foreground/40"
-                    }`}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
 
@@ -430,10 +389,10 @@ function Dashboard() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-xs text-muted-foreground">Knowledge Base</div>
-              <div className="mt-0.5 font-semibold">248 documents</div>
+              <div className="mt-0.5 font-semibold">No documents</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                <span className="text-success">Healthy · 100% embedded</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                <span className="text-muted-foreground">Upload documents to get started</span>
               </div>
             </div>
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
@@ -447,10 +406,10 @@ function Dashboard() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-xs text-muted-foreground">Phone Numbers</div>
-              <div className="mt-0.5 font-semibold">4 active</div>
+              <div className="mt-0.5 font-semibold">No numbers</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                <span className="text-success">All healthy · 0 errors</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                <span className="text-muted-foreground">Add a phone number to enable calls</span>
               </div>
             </div>
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
@@ -464,10 +423,10 @@ function Dashboard() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-xs text-muted-foreground">Platform Security</div>
-              <div className="mt-0.5 font-semibold">SOC2 Compliant</div>
+              <div className="mt-0.5 font-semibold">Active</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                <span className="text-success">Encrypted · Audit logs on</span>
+                <span className="text-success">Encrypted · Standard compliance</span>
               </div>
             </div>
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
@@ -485,11 +444,7 @@ function Dashboard() {
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold">AI Recommendations</div>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Based on your call patterns, enabling{" "}
-              <span className="text-foreground font-medium">after-hours voicemail</span> could
-              capture <span className="text-success font-medium">~42 additional leads/month</span>.
-              Agent Milo has a 94% first-call resolution rate — consider expanding his
-              responsibilities.
+              Recommendations will appear here after analyzing your call data and agent performance.
             </p>
           </div>
           <Button
