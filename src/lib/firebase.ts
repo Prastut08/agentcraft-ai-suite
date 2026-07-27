@@ -25,10 +25,17 @@ const config = {
     process?.env?.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-for (const [key, value] of Object.entries(config)) {
-  if (!value) {
-    throw new Error(`Missing required Firebase config: ${key}`);
-  }
+const missingKeys = Object.entries(config)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
+
+export const isFirebaseConfigured = missingKeys.length === 0;
+
+if (!isFirebaseConfigured) {
+  console.warn(
+    `Firebase config missing: ${missingKeys.join(", ")}. ` +
+      "Set VITE_FIREBASE_* in .env to enable auth.",
+  );
 }
 
 const app = getApps().length === 0 ? initializeApp(config) : getApp();

@@ -18,22 +18,38 @@ export function useFirebaseAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(
-    () =>
-      onAuthStateChanged(
-        auth,
-        (nextUser) => {
-          setUser(nextUser);
-          setLoading(false);
-        },
-        (error) => {
-          console.warn("Firebase Auth state change error:", error);
-          setUser(null);
-          setLoading(false);
-        },
-      ),
-    [],
-  );
+  useEffect(() => {
+    let isMounted = true;
+    const timeout = window.setTimeout(() => {
+      if (isMounted) {
+        setUser(null);
+        setLoading(false);
+      }
+    }, 5000);
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        if (!isMounted) return;
+        setUser(nextUser);
+        setLoading(false);
+        window.clearTimeout(timeout);
+      },
+      (error) => {
+        if (!isMounted) return;
+        console.warn("Firebase Auth state change error:", error);
+        setUser(null);
+        setLoading(false);
+        window.clearTimeout(timeout);
+      },
+    );
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeout);
+      unsubscribe();
+    };
+  }, []);
 
   return { user, loading };
 }

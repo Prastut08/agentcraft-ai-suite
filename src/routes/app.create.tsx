@@ -237,6 +237,18 @@ function CreateWizard() {
   const [prompt, setPrompt] = useState("");
   const promptRef = useRef("");
 
+  const [speakingSpeed, setSpeakingSpeed] = useState("normal");
+  const [conversationStyle, setConversationStyle] = useState("short");
+  const [accent, setAccent] = useState("american");
+  const [language, setLanguage] = useState("en");
+
+  const voiceDetailsRef = useRef({
+    speakingSpeed: "normal",
+    conversationStyle: "short",
+    accent: "american",
+    language: "en",
+  });
+
   const progress = (step / 10) * 100;
 
   const businessName = businessInfo.businessName.trim() || "Bright Dental";
@@ -312,26 +324,34 @@ function CreateWizard() {
   }, []);
 
   const setHumorState = useCallback((next: number[]) => {
-    personalityRef.current = { ...personalityRef.current, humor: next[0] };
+    const value = next[0];
+    personalityRef.current = { ...personalityRef.current, humor: value };
     setHumor(next);
+    setPersonality((prev) => ({ ...prev, humor: value }));
   }, []);
 
   const setEmpathyState = useCallback((next: number[]) => {
-    personalityRef.current = { ...personalityRef.current, empathy: next[0] };
+    const value = next[0];
+    personalityRef.current = { ...personalityRef.current, empathy: value };
     setEmpathy(next);
+    setPersonality((prev) => ({ ...prev, empathy: value }));
   }, []);
 
   const setProfessionalismState = useCallback((next: number[]) => {
+    const value = next[0];
     personalityRef.current = {
       ...personalityRef.current,
-      professionalism: next[0],
+      professionalism: value,
     };
     setProfessionalism(next);
+    setPersonality((prev) => ({ ...prev, professionalism: value }));
   }, []);
 
   const setConfidenceState = useCallback((next: number[]) => {
-    personalityRef.current = { ...personalityRef.current, confidence: next[0] };
+    const value = next[0];
+    personalityRef.current = { ...personalityRef.current, confidence: value };
     setConfidence(next);
+    setPersonality((prev) => ({ ...prev, confidence: value }));
   }, []);
 
   useEffect(() => {
@@ -441,6 +461,30 @@ function CreateWizard() {
         );
         setCallFlowState(flow);
       }
+
+      if (data.voiceDetails && typeof data.voiceDetails === "object") {
+        const vd = data.voiceDetails as Record<string, unknown>;
+        if (typeof vd.speakingSpeed === "string")
+          setSpeakingSpeed(vd.speakingSpeed);
+        if (typeof vd.conversationStyle === "string")
+          setConversationStyle(vd.conversationStyle);
+        if (typeof vd.accent === "string") setAccent(vd.accent);
+        if (typeof vd.language === "string") setLanguage(vd.language);
+        voiceDetailsRef.current = {
+          speakingSpeed:
+            typeof vd.speakingSpeed === "string" ? vd.speakingSpeed : "normal",
+          conversationStyle:
+            typeof vd.conversationStyle === "string"
+              ? vd.conversationStyle
+              : "short",
+          accent: typeof vd.accent === "string" ? vd.accent : "american",
+          language: typeof vd.language === "string" ? vd.language : "en",
+          voice:
+            typeof vd.voice === "string"
+              ? vd.voice
+              : personalityRef.current.voice,
+        };
+      }
     });
 
     return unsubscribe;
@@ -519,6 +563,7 @@ function CreateWizard() {
         personality: personalityRef.current,
         callFlow: callFlowRef.current,
         prompt: promptRef.current,
+        voiceDetails: voiceDetailsRef.current,
       },
       updatedAt: serverTimestamp(),
     };
@@ -526,6 +571,16 @@ function CreateWizard() {
     console.log(
       "[create] saveDraft writing sections:",
       Object.keys(draft.sections),
+    );
+    console.log(
+      "[create] saveDraft voiceDetails payload:",
+      draft.sections.voiceDetails,
+    );
+    console.log(
+      "[create] saveDraft personality/callFlow/prompt payload:",
+      draft.sections.personality,
+      draft.sections.callFlow,
+      draft.sections.prompt,
     );
 
     setSavingDraft(true);
@@ -621,10 +676,10 @@ function CreateWizard() {
         knowledge: "Ingested",
         desc: businessInfo.businessDescription || "AI employee.",
         createdAt: serverTimestamp(),
-        // Save config
         businessInfo,
         selectedTypes,
         selectedResp,
+        responsibilities: selectedResp,
         personality: {
           tone,
           voice,
@@ -633,7 +688,12 @@ function CreateWizard() {
           professionalism: professionalism[0],
           confidence: confidence[0],
         },
+        callFlow,
+        prompt,
+        voiceDetails: voiceDetailsRef.current,
       };
+
+      console.log("[create] handleDeploy payload", newAgent);
 
       await setDoc(newAgentDoc, newAgent);
 
@@ -706,32 +766,49 @@ function CreateWizard() {
         doc(db, "users", user.uid, "createAgentDrafts", "current"),
         { personality: personalityRef.current },
         { merge: true },
-      ).catch((error) => console.error("Autosave personality failed", error));
+      )
+        .then(() =>
+          console.log(
+            "[create] autosave personality success",
+            personalityRef.current,
+          ),
+        )
+        .catch((error) => console.error("Autosave personality failed", error));
     }, 400);
 
     return () => window.clearTimeout(timer);
   }, [user, personality]);
 
   useEffect(() => {
-    if (
-      !user ||
-      !hydratedDraftRef.current ||
-      personalityRef.current.voice === voice
-    ) {
+    if (!user || !hydratedDraftRef.current) {
       return;
     }
 
+    voiceDetailsRef.current = {
+      speakingSpeed,
+      conversationStyle,
+      accent,
+      language,
+      voice: personalityRef.current.voice,
+    };
+
     const timer = window.setTimeout(() => {
-      personalityRef.current = { ...personalityRef.current, voice };
       setDoc(
         doc(db, "users", user.uid, "createAgentDrafts", "current"),
-        { personality: personalityRef.current },
+        { voiceDetails: voiceDetailsRef.current },
         { merge: true },
-      ).catch((error) => console.error("Autosave voice failed", error));
+      )
+        .then(() =>
+          console.log(
+            "[create] autosave voiceDetails success",
+            voiceDetailsRef.current,
+          ),
+        )
+        .catch((error) => console.error("Autosave voiceDetails failed", error));
     }, 400);
 
     return () => window.clearTimeout(timer);
-  }, [user, voice]);
+  }, [user, speakingSpeed, conversationStyle, accent, language, personality]);
 
   useEffect(() => {
     if (!user || !hydratedDraftRef.current || promptRef.current === prompt) {
@@ -1121,7 +1198,16 @@ function CreateWizard() {
               </Field>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Speaking speed">
-                  <Select defaultValue="normal">
+                  <Select
+                    value={speakingSpeed}
+                    onValueChange={(value) => {
+                      setSpeakingSpeed(value);
+                      voiceDetailsRef.current = {
+                        ...voiceDetailsRef.current,
+                        speakingSpeed: value,
+                      };
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1133,7 +1219,16 @@ function CreateWizard() {
                   </Select>
                 </Field>
                 <Field label="Conversation style">
-                  <Select defaultValue="short">
+                  <Select
+                    value={conversationStyle}
+                    onValueChange={(value) => {
+                      setConversationStyle(value);
+                      voiceDetailsRef.current = {
+                        ...voiceDetailsRef.current,
+                        conversationStyle: value,
+                      };
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1180,6 +1275,12 @@ function CreateWizard() {
                       onClick={() => {
                         setVoice(v.name);
                         updatePersonality({ voice: v.name });
+                        voiceDetailsRef.current = {
+                          ...voiceDetailsRef.current,
+                          voice: v.name,
+                          accent: v.accent.toLowerCase(),
+                        };
+                        setAccent(v.accent.toLowerCase());
                       }}
                       className={`rounded-2xl border p-5 text-left transition ${active ? "" : "border-border/60"}`}
                       style={active ? selectedStyle : undefined}
@@ -1205,7 +1306,16 @@ function CreateWizard() {
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Accent">
-                  <Select defaultValue="american">
+                  <Select
+                    value={accent}
+                    onValueChange={(value) => {
+                      setAccent(value);
+                      voiceDetailsRef.current = {
+                        ...voiceDetailsRef.current,
+                        accent: value,
+                      };
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1217,7 +1327,16 @@ function CreateWizard() {
                   </Select>
                 </Field>
                 <Field label="Language">
-                  <Select defaultValue="en">
+                  <Select
+                    value={language}
+                    onValueChange={(value) => {
+                      setLanguage(value);
+                      voiceDetailsRef.current = {
+                        ...voiceDetailsRef.current,
+                        language: value,
+                      };
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

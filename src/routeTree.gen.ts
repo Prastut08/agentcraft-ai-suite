@@ -26,6 +26,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as OnboardingAgentTypeRouteImport } from './routes/onboarding.agent-type'
+import { Route as AppAgentsAgentIdRouteImport } from './routes/app.agents.$agentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,11 +113,16 @@ const OnboardingAgentTypeRoute = OnboardingAgentTypeRouteImport.update({
   path: '/onboarding/agent-type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAgentsAgentIdRoute = AppAgentsAgentIdRouteImport.update({
+  id: '/$agentId',
+  path: '/$agentId',
+  getParentRoute: () => AppAgentsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/agents': typeof AppAgentsRoute
+  '/app/agents': typeof AppAgentsRouteWithChildren
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/conversations': typeof AppConversationsRoute
@@ -131,10 +137,11 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/onboarding/agent-type': typeof OnboardingAgentTypeRoute
   '/app/': typeof AppIndexRoute
+  '/app/agents/$agentId': typeof AppAgentsAgentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/agents': typeof AppAgentsRoute
+  '/app/agents': typeof AppAgentsRouteWithChildren
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/conversations': typeof AppConversationsRoute
@@ -149,12 +156,13 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/onboarding/agent-type': typeof OnboardingAgentTypeRoute
   '/app': typeof AppIndexRoute
+  '/app/agents/$agentId': typeof AppAgentsAgentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/agents': typeof AppAgentsRoute
+  '/app/agents': typeof AppAgentsRouteWithChildren
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/conversations': typeof AppConversationsRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/onboarding/agent-type': typeof OnboardingAgentTypeRoute
   '/app/': typeof AppIndexRoute
+  '/app/agents/$agentId': typeof AppAgentsAgentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/onboarding/agent-type'
     | '/app/'
+    | '/app/agents/$agentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/onboarding/agent-type'
     | '/app'
+    | '/app/agents/$agentId'
   id:
     | '__root__'
     | '/'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/onboarding/agent-type'
     | '/app/'
+    | '/app/agents/$agentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -358,11 +370,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingAgentTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/agents/$agentId': {
+      id: '/app/agents/$agentId'
+      path: '/$agentId'
+      fullPath: '/app/agents/$agentId'
+      preLoaderRoute: typeof AppAgentsAgentIdRouteImport
+      parentRoute: typeof AppAgentsRoute
+    }
   }
 }
 
+interface AppAgentsRouteChildren {
+  AppAgentsAgentIdRoute: typeof AppAgentsAgentIdRoute
+}
+
+const AppAgentsRouteChildren: AppAgentsRouteChildren = {
+  AppAgentsAgentIdRoute: AppAgentsAgentIdRoute,
+}
+
+const AppAgentsRouteWithChildren = AppAgentsRoute._addFileChildren(
+  AppAgentsRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppAgentsRoute: typeof AppAgentsRoute
+  AppAgentsRoute: typeof AppAgentsRouteWithChildren
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppBillingRoute: typeof AppBillingRoute
   AppConversationsRoute: typeof AppConversationsRoute
@@ -377,7 +408,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAgentsRoute: AppAgentsRoute,
+  AppAgentsRoute: AppAgentsRouteWithChildren,
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppBillingRoute: AppBillingRoute,
   AppConversationsRoute: AppConversationsRoute,

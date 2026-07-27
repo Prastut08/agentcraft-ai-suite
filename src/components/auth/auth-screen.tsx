@@ -32,6 +32,7 @@ import {
   signUpWithEmail,
   useFirebaseAuth,
 } from "@/lib/firebase-auth";
+import { isFirebaseConfigured } from "@/lib/firebase";
 
 type AuthScreenProps = {
   compact?: boolean;
@@ -120,6 +121,35 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
             Checking your session...
           </span>
         </div>
+      </div>
+    );
+  }
+
+  if (!isFirebaseConfigured) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
+        <Card className="max-w-lg border-border/60 p-6 text-center shadow-xl">
+          <Shield className="mx-auto h-10 w-10 text-warning" />
+          <h2 className="mt-4 text-xl font-semibold">
+            Firebase not configured
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Add your real Firebase project config to{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">.env</code>{" "}
+            to enable authentication.
+          </p>
+          <div className="mt-4 rounded-xl border border-border/60 bg-surface/70 p-4 text-left text-xs text-muted-foreground">
+            <p className="font-semibold text-foreground">Required variables:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>VITE_FIREBASE_API_KEY</li>
+              <li>VITE_FIREBASE_AUTH_DOMAIN</li>
+              <li>VITE_FIREBASE_PROJECT_ID</li>
+              <li>VITE_FIREBASE_STORAGE_BUCKET</li>
+              <li>VITE_FIREBASE_MESSAGING_SENDER_ID</li>
+              <li>VITE_FIREBASE_APP_ID</li>
+            </ul>
+          </div>
+        </Card>
       </div>
     );
   }

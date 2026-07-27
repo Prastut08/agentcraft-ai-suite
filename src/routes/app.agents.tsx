@@ -46,6 +46,25 @@ interface Agent {
   lastDeployed: string;
   knowledge: string;
   desc: string;
+  personality?: {
+    tone: string;
+    voice: string;
+    humor: number;
+    empathy: number;
+    professionalism: number;
+    confidence: number;
+  };
+  callFlow?: string[];
+  prompt?: string;
+  selectedResp?: string[];
+  voiceDetails?: {
+    voice: string;
+    tone: string;
+    speakingSpeed: string;
+    conversationStyle: string;
+    accent: string;
+    language: string;
+  };
 }
 
 const statusConfig: Record<
@@ -468,8 +487,11 @@ function Agents() {
                       size="sm"
                       variant="ghost"
                       className="shrink-0 text-xs text-muted-foreground"
+                      asChild
                     >
-                      <ArrowUpRight className="h-3.5 w-3.5" />
+                      <Link to={`/app/agents/${a.id}`}>
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
                     </Button>
                   )}
                 </div>
