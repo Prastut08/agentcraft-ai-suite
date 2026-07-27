@@ -1,8 +1,5 @@
 node_modules
 backend/.env
-backend/.env.local
-backend/venv
-backend/__pycache__
 backend/*.egg-info
 .env
 .env.local
