@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-n5LQ9ujS.js";import{t}from"./auth-screen-DzrNPKHz.js";var n=e(),r=()=>(0,n.jsx)(t,{});export{r as component};

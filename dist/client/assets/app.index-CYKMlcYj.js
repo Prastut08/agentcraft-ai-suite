@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-n5LQ9ujS.js";import{y as t}from"./index-BXgUuSdn.js";var n=e(),r=()=>(0,n.jsx)(t,{to:`/app/dashboard`});export{r as component};
