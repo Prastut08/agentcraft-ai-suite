@@ -161,6 +161,16 @@ function CreateWizard() {
   const [voice, setVoice] = useState("Aria");
   const [humor, setHumor] = useState([30]);
   const [empathy, setEmpathy] = useState([70]);
+  const [professionalism, setProfessionalism] = useState([85]);
+  const [confidence, setConfidence] = useState([75]);
+
+  const selectedStyle: React.CSSProperties = {
+    borderColor: "var(--color-primary)",
+    background: "color-mix(in oklch, var(--color-primary) 12%, transparent)",
+    boxShadow: "0 0 0 1px color-mix(in oklch, var(--color-primary) 30%, transparent)",
+    position: "relative",
+    zIndex: 1,
+  };
   const [savingDraft, setSavingDraft] = useState(false);
   const hydratedDraftRef = useRef(false);
   const stepHydratedRef = useRef(false);
@@ -181,10 +191,10 @@ function CreateWizard() {
   const businessInfoRef = useRef<BusinessInfo>(initialBusinessInfo);
   const selectedTypesRef = useRef<string[]>(["AI Receptionist"]);
   const selectedRespRef = useRef<string[]>(["Answer Calls", "Book Appointments"]);
-  const [personality, setPersonality] = useState({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70 });
-  const personalityRef = useRef({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70 });
-  const [callFlow, setCallFlow] = useState<any>(null);
-  const callFlowRef = useRef<any>(null);
+  const [personality, setPersonality] = useState({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70, professionalism: 85, confidence: 75 });
+  const personalityRef = useRef({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70, professionalism: 85, confidence: 75 });
+  const [callFlow, setCallFlow] = useState<string[]>([]);
+  const callFlowRef = useRef<string[]>([]);
   const [prompt, setPrompt] = useState("");
   const promptRef = useRef("");
 
@@ -212,7 +222,7 @@ function CreateWizard() {
   const next = () => setStep((s) => Math.min(10, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
-  const updatePersonality = useCallback((changes: Partial<{ tone: string; voice: string; humor: number; empathy: number }>) => {
+  const updatePersonality = useCallback((changes: Partial<{ tone: string; voice: string; humor: number; empathy: number; professionalism: number; confidence: number }>) => {
     setPersonality((prev) => {
       const next = { ...prev, ...changes };
       personalityRef.current = next;
@@ -220,7 +230,20 @@ function CreateWizard() {
     });
   }, []);
 
-  const setCallFlowState = useCallback((next: any) => {
+  const setCallFlowState = useCallback((next: string[]) => {
+    callFlowRef.current = next;
+    setCallFlow(next);
+  }, []);
+
+  const addCallFlowBlock = useCallback((block: string) => {
+    if (callFlowRef.current.includes(block)) return;
+    const next = [...callFlowRef.current, block];
+    callFlowRef.current = next;
+    setCallFlow(next);
+  }, []);
+
+  const removeCallFlowBlock = useCallback((index: number) => {
+    const next = callFlowRef.current.filter((_, i) => i !== index);
     callFlowRef.current = next;
     setCallFlow(next);
   }, []);
@@ -238,6 +261,16 @@ function CreateWizard() {
   const setEmpathyState = useCallback((next: number[]) => {
     personalityRef.current = { ...personalityRef.current, empathy: next[0] };
     setEmpathy(next);
+  }, []);
+
+  const setProfessionalismState = useCallback((next: number[]) => {
+    personalityRef.current = { ...personalityRef.current, professionalism: next[0] };
+    setProfessionalism(next);
+  }, []);
+
+  const setConfidenceState = useCallback((next: number[]) => {
+    personalityRef.current = { ...personalityRef.current, confidence: next[0] };
+    setConfidence(next);
   }, []);
 
   useEffect(() => {
@@ -301,10 +334,12 @@ function CreateWizard() {
       }
 
       if (typeof data.personality?.tone === "string") {
+        setTone(data.personality.tone);
         updatePersonality({ tone: data.personality.tone });
       }
 
       if (typeof data.personality?.voice === "string") {
+        setVoice(data.personality.voice);
         updatePersonality({ voice: data.personality.voice });
       }
 
@@ -315,7 +350,20 @@ function CreateWizard() {
       if (typeof data.personality?.empathy === "number") {
         setEmpathyState([data.personality.empathy]);
       }
-    });
+
+      if (typeof data.personality?.professionalism === "number") {
+        setProfessionalismState([data.personality.professionalism]);
+      }
+
+      if (typeof data.personality?.confidence === "number") {
+        setConfidenceState([data.personality.confidence]);
+      }
+
+      if (Array.isArray(data.callFlow)) {
+        const flow = data.callFlow.filter((item): item is string => typeof item === "string");
+        setCallFlowState(flow);
+      }
+     });
 
     return unsubscribe;
   }, [user]);
@@ -486,12 +534,14 @@ function CreateWizard() {
         businessInfo,
         selectedTypes,
         selectedResp,
-        personality: {
-          tone,
-          voice,
-          humor: humor[0],
-          empathy: empathy[0],
-        },
+         personality: {
+           tone,
+           voice,
+           humor: humor[0],
+           empathy: empathy[0],
+           professionalism: professionalism[0],
+           confidence: confidence[0],
+         },
       };
 
       await setDoc(newAgentDoc, newAgent);
@@ -602,6 +652,22 @@ function CreateWizard() {
 
     return () => window.clearTimeout(timer);
   }, [user, prompt]);
+
+  useEffect(() => {
+    if (!user || !hydratedDraftRef.current) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        { callFlow: callFlowRef.current },
+        { merge: true },
+      ).catch((error) => console.error("Autosave call flow failed", error));
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [user, callFlow]);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -790,7 +856,8 @@ function CreateWizard() {
                     <button
                       key={t}
                       onClick={() => toggle(selectedTypes, setSelectedTypes, selectedTypesRef, t)}
-                      className={`rounded-xl border p-4 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60 hover:border-border"}`}
+                      className={`rounded-xl border p-4 text-left transition ${active ? "" : "border-border/60 text-foreground hover:border-border"}`}
+                      style={active ? selectedStyle : undefined}
                     >
                       <div className="flex items-center justify-between">
                         <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15 text-primary">
@@ -821,7 +888,8 @@ function CreateWizard() {
                     <button
                       key={r}
                       onClick={() => toggle(selectedResp, setSelectedResp, selectedRespRef, r)}
-                      className={`rounded-full border px-4 py-2 text-sm transition ${active ? "border-primary bg-primary/15 text-foreground" : "border-border/60 text-muted-foreground hover:border-border"}`}
+                      className={`rounded-full border px-4 py-2 text-sm transition ${active ? "" : "border-border/60 text-muted-foreground hover:border-border"}`}
+                      style={active ? selectedStyle : undefined}
                     >
                       {active && <Check className="mr-1.5 inline h-3.5 w-3.5 text-primary" />}
                       {r}
@@ -897,8 +965,9 @@ function CreateWizard() {
                   {tones.map((t) => (
                     <button
                       key={t}
-                      onClick={() => updatePersonality({ tone: t })}
-                      className={`rounded-full border px-4 py-1.5 text-sm ${tone === t ? "border-primary bg-primary/15" : "border-border/60 text-muted-foreground"}`}
+                      onClick={() => { setTone(t); updatePersonality({ tone: t }); }}
+                      className={`rounded-full border px-4 py-1.5 text-sm transition ${tone === t ? "" : "border-border/60 text-muted-foreground"}`}
+                      style={tone === t ? selectedStyle : undefined}
                     >
                       {t}
                     </button>
@@ -935,8 +1004,8 @@ function CreateWizard() {
               <div className="space-y-5">
                 <SliderRow label="Humor" v={humor} setV={setHumorState} />
                 <SliderRow label="Empathy" v={empathy} setV={setEmpathyState} />
-                <SliderRow label="Professionalism" v={[85]} setV={() => {}} />
-                <SliderRow label="Confidence" v={[75]} setV={() => {}} />
+                <SliderRow label="Professionalism" v={professionalism} setV={setProfessionalismState} />
+                <SliderRow label="Confidence" v={confidence} setV={setConfidenceState} />
               </div>
             </div>
           )}
@@ -955,8 +1024,9 @@ function CreateWizard() {
                   return (
                     <button
                       key={v.name}
-                      onClick={() => updatePersonality({ voice: v.name })}
-                      className={`rounded-2xl border p-5 text-left transition ${active ? "border-primary bg-primary/10 brand-glow" : "border-border/60"}`}
+                      onClick={() => { setVoice(v.name); updatePersonality({ voice: v.name }); }}
+                      className={`rounded-2xl border p-5 text-left transition ${active ? "" : "border-border/60"}`}
+                      style={active ? selectedStyle : undefined}
                     >
                       <div className="flex items-center justify-between">
                         <div className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-primary/40 to-accent/40 text-lg font-semibold">
@@ -1036,24 +1106,44 @@ function CreateWizard() {
                       "CRM Lookup",
                       "Payment",
                       "End Call",
-                    ].map((b) => (
-                      <div
+                      ].map((b) => (
+                      <button
                         key={b}
-                        className="cursor-grab rounded-lg border border-border/60 px-3 py-1.5 text-xs hover:border-primary/60"
+                        onClick={() => addCallFlowBlock(b)}
+                        className="cursor-pointer rounded-lg border border-border/60 px-3 py-1.5 text-xs hover:border-primary/60 text-foreground"
                       >
                         {b}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </Card>
                 <div className="relative min-h-[420px] rounded-2xl border border-border/60 grid-bg p-6">
-                  <FlowNode className="left-6 top-6" title="Start Call" color="primary" />
-                  <FlowNode className="left-52 top-6" title="Greeting" color="primary" />
-                  <FlowNode className="left-96 top-6" title="Ask Question" color="accent" />
-                  <FlowNode className="left-6 top-52" title="Knowledge Lookup" color="primary" />
-                  <FlowNode className="left-52 top-52" title="Book Appointment" color="accent" />
-                  <FlowNode className="left-96 top-52" title="End Call" color="muted" />
-                </div>
+                   {callFlow.length === 0 ? (
+                     <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-muted-foreground">
+                       Click blocks from the sidebar to build your call flow
+                     </div>
+                   ) : (
+                     <div className="space-y-3">
+                       {callFlow.map((block, i) => (
+                         <div
+                           key={block}
+                           className="flex items-center gap-3 rounded-xl border border-border/60 bg-primary/10 p-3 text-sm"
+                         >
+                           <div className="grid h-7 w-7 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
+                             {i + 1}
+                           </div>
+                           <span className="flex-1 font-medium">{block}</span>
+                           <button
+                             onClick={() => removeCallFlowBlock(i)}
+                             className="text-muted-foreground hover:text-destructive"
+                           >
+                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                           </button>
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                 </div>
               </div>
             </div>
           )}
@@ -1138,7 +1228,7 @@ preventive care.
 
 # PERSONALITY
 Tone: professional, warm, calm. Speak in short sentences.
-Never rush the caller. Empathy: 70/100. Humor: 30/100.
+Never rush the caller. Empathy: ${empathy[0]}/100. Humor: ${humor[0]}/100. Professionalism: ${professionalism[0]}/100. Confidence: ${confidence[0]}/100.
 
 # RESPONSIBILITIES
 - Answer inbound calls, verify caller identity.
@@ -1244,30 +1334,6 @@ function Summary({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-border/60 p-4">
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-1 font-medium">{value}</div>
-    </div>
-  );
-}
-
-function FlowNode({
-  className,
-  title,
-  color,
-}: {
-  className: string;
-  title: string;
-  color: "primary" | "accent" | "muted";
-}) {
-  const colorMap = {
-    primary: "border-primary/60 bg-primary/15",
-    accent: "border-accent/60 bg-accent/15",
-    muted: "border-border bg-muted",
-  };
-  return (
-    <div
-      className={`absolute w-40 rounded-xl border p-3 text-xs backdrop-blur ${colorMap[color]} ${className}`}
-    >
-      <div className="font-medium">{title}</div>
-      <div className="mt-1 text-[10px] text-muted-foreground">Click to configure</div>
     </div>
   );
 }

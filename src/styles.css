@@ -245,6 +245,7 @@
   border: 1px solid oklch(1 0 0 / 0.09);
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-card);
+  isolation: isolate;
 }
 
 @utility glass-sm {
@@ -397,26 +398,25 @@
   border-bottom: 1px solid oklch(1 0 0 / 0.06);
 }
 
-/* Number badge pill */
-@utility badge-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 600;
-  background: var(--color-primary);
-  color: var(--color-primary-foreground);
-  line-height: 1;
-}
+/* ===================== COMPONENTS ===================== */
 
-/* Page header gradient */
-@utility page-header {
-  background: linear-gradient(180deg, oklch(0.68 0.22 268 / 0.06) 0%, transparent 100%);
-  border-bottom: 1px solid oklch(1 0 0 / 0.06);
+@layer components {
+  .selected {
+    border-color: var(--color-primary) !important;
+    background: color-mix(in oklch, var(--color-primary) 12%, transparent) !important;
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-primary) 30%, transparent) !important;
+  }
+
+  .selected-ring {
+    box-shadow: 0 0 0 2px var(--color-primary) !important;
+  }
+
+  .glass .selected,
+  .glass .brand-glow,
+  .glass .selected-ring {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* ===================== ANIMATIONS ===================== */
