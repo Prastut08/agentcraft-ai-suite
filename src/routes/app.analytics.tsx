@@ -70,8 +70,22 @@ function Analytics() {
             icon: CheckCircle,
             color: "muted",
           },
-          { l: "Avg Response", v: "—", d: "No data", t: "up", icon: Zap, color: "muted" },
-          { l: "Avg Call Length", v: "—", d: "No data", t: "up", icon: Clock, color: "muted" },
+          {
+            l: "Avg Response",
+            v: "—",
+            d: "No data",
+            t: "up",
+            icon: Zap,
+            color: "muted",
+          },
+          {
+            l: "Avg Call Length",
+            v: "—",
+            d: "No data",
+            t: "up",
+            icon: Clock,
+            color: "muted",
+          },
           {
             l: "Lead Conversion",
             v: "—",
@@ -139,8 +153,12 @@ function Analytics() {
           </div>
           <div className="h-64 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">No analytics data yet</p>
-              <p className="mt-1 text-xs text-muted-foreground/70">Call data will appear here once available.</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                No analytics data yet
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Call data will appear here once available.
+              </p>
             </div>
           </div>
         </Card>
@@ -150,8 +168,12 @@ function Analytics() {
           <h3 className="mb-4 font-semibold">Caller Sentiment</h3>
           <div className="h-48 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">No sentiment data yet</p>
-              <p className="mt-1 text-xs text-muted-foreground/70">Sentiment breakdown will appear here.</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                No sentiment data yet
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Sentiment breakdown will appear here.
+              </p>
             </div>
           </div>
         </Card>
@@ -164,14 +186,22 @@ function Analytics() {
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h3 className="font-semibold">Success Rate Trend</h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">30-day rolling average</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                30-day rolling average
+              </p>
             </div>
-            <Badge className="bg-muted/50 text-muted-foreground border-border">—</Badge>
+            <Badge className="bg-muted/50 text-muted-foreground border-border">
+              —
+            </Badge>
           </div>
           <div className="h-52 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">No trend data yet</p>
-              <p className="mt-1 text-xs text-muted-foreground/70">Trend data will appear once available.</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                No trend data yet
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Trend data will appear once available.
+              </p>
             </div>
           </div>
         </Card>
@@ -181,15 +211,21 @@ function Analytics() {
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h3 className="font-semibold">Top Questions Asked</h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">Most frequent caller inquiries</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Most frequent caller inquiries
+              </p>
             </div>
             <Badge variant="outline" className="text-xs">
               This week
             </Badge>
           </div>
           <div className="text-center py-8">
-            <p className="text-sm font-medium text-muted-foreground">No questions data yet</p>
-            <p className="mt-1 text-xs text-muted-foreground/70">Top questions will appear here once available.</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              No questions data yet
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/70">
+              Top questions will appear here once available.
+            </p>
           </div>
         </Card>
       </div>
@@ -203,13 +239,21 @@ function Analytics() {
               Individual agent metrics this period
             </p>
           </div>
-          <Button variant="outline" size="sm" className="border-border/60 text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border/60 text-xs"
+          >
             View detailed report
           </Button>
         </div>
         <div className="text-center py-8">
-          <p className="text-sm font-medium text-muted-foreground">No agent data yet</p>
-          <p className="mt-1 text-xs text-muted-foreground/70">Agent performance metrics will appear here once available.</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            No agent data yet
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/70">
+            Agent performance metrics will appear here once available.
+          </p>
         </div>
       </Card>
     </div>

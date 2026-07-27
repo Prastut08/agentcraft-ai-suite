@@ -8,16 +8,22 @@ export const Route = createFileRoute("/app/numbers")({
   component: Numbers,
 });
 
-
-
-const numbers: { n: string; provider: string; agent: string; country: string; status: string }[] = [];
+const numbers: {
+  n: string;
+  provider: string;
+  agent: string;
+  country: string;
+  status: string;
+}[] = [];
 
 function Numbers() {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Phone Numbers</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Add numbers to route calls to your agents.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Add numbers to route calls to your agents.
+        </p>
       </div>
       <Card className="glass overflow-hidden">
         <table className="w-full text-sm">
@@ -33,13 +39,19 @@ function Numbers() {
           <tbody>
             {numbers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-sm text-muted-foreground">
+                <td
+                  colSpan={5}
+                  className="p-8 text-center text-sm text-muted-foreground"
+                >
                   No phone numbers yet. Add a number to get started.
                 </td>
               </tr>
             ) : (
               numbers.map((r) => (
-                <tr key={r.n} className="border-b border-border/40 last:border-0 hover:bg-muted/30">
+                <tr
+                  key={r.n}
+                  className="border-b border-border/40 last:border-0 hover:bg-muted/30"
+                >
                   <td className="p-4 font-mono">{r.n}</td>
                   <td className="p-4">
                     <Badge variant="outline">{r.provider}</Badge>

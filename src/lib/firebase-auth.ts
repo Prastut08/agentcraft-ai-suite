@@ -48,7 +48,11 @@ export async function signUpWithEmail(
   displayName: string,
   businessName?: string,
 ) {
-  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  const credential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password,
+  );
   const name = displayName.trim() || email.split("@")[0] || "New user";
   const workspaceName = businessName?.trim() || name;
 

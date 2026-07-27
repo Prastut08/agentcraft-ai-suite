@@ -47,7 +47,9 @@ function AgentTypeOnboarding() {
   }, [user, loading, navigate]);
 
   const toggle = (type: string) => {
-    setSelected((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
+    setSelected((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
   };
 
   const handleContinue = async () => {
@@ -101,7 +103,9 @@ function AgentTypeOnboarding() {
           </div>
           <div>
             <div className="text-sm font-semibold">VoiceForge AI</div>
-            <div className="text-xs text-muted-foreground">Let's set up your workspace</div>
+            <div className="text-xs text-muted-foreground">
+              Let's set up your workspace
+            </div>
           </div>
         </div>
 

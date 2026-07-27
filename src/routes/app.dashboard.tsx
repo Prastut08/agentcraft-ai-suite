@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,13 +106,35 @@ const stats = [
   },
 ];
 
-const recent: { name: string; agent: string; role: string; outcome: string; time: string; status: string }[] = [];
+const recent: {
+  name: string;
+  agent: string;
+  role: string;
+  outcome: string;
+  time: string;
+  status: string;
+}[] = [];
 
 const quickActions = [
   { label: "Create Agent", icon: Plus, to: "/app/create", color: "primary" },
-  { label: "Upload Knowledge", icon: Database, to: "/app/knowledge", color: "accent" },
-  { label: "View Analytics", icon: TrendingUp, to: "/app/analytics", color: "success" },
-  { label: "Integrations", icon: Zap, to: "/app/integrations", color: "warning" },
+  {
+    label: "Upload Knowledge",
+    icon: Database,
+    to: "/app/knowledge",
+    color: "accent",
+  },
+  {
+    label: "View Analytics",
+    icon: TrendingUp,
+    to: "/app/analytics",
+    color: "success",
+  },
+  {
+    label: "Integrations",
+    icon: Zap,
+    to: "/app/integrations",
+    color: "warning",
+  },
 ];
 
 function StatCard({ s }: { s: (typeof stats)[0] }) {
@@ -158,8 +180,12 @@ function StatCard({ s }: { s: (typeof stats)[0] }) {
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {s.label}
         </div>
-        <div className="mt-1.5 text-2xl font-bold tracking-tight">{s.value}</div>
-        <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${deltaColor}`}>
+        <div className="mt-1.5 text-2xl font-bold tracking-tight">
+          {s.value}
+        </div>
+        <div
+          className={`mt-1 flex items-center gap-1 text-xs font-medium ${deltaColor}`}
+        >
           <TrendingUp className="h-3 w-3" />
           {s.delta} vs last month
         </div>
@@ -168,14 +194,23 @@ function StatCard({ s }: { s: (typeof stats)[0] }) {
   );
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: TooltipProps<ValueType, NameType>) => {
   if (active && payload?.length) {
     return (
       <div className="rounded-xl border border-border/60 bg-popover p-3 shadow-xl">
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Day {label}</p>
-        {payload.map((p: any) => (
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          Day {label}
+        </p>
+        {payload.map((p: { value: number; name: string } | undefined) => (
           <div key={p.name} className="flex items-center gap-2 text-sm">
-            <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: p.color }}
+            />
             <span className="capitalize text-muted-foreground">{p.name}:</span>
             <span className="font-semibold">{p.value}</span>
           </div>
@@ -247,18 +282,41 @@ function Dashboard() {
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={callsData} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+              <AreaChart
+                data={callsData}
+                margin={{ top: 4, right: 4, bottom: 0, left: -16 }}
+              >
                 <defs>
                   <linearGradient id="c1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--color-primary)"
+                      stopOpacity={0.5}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--color-primary)"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                   <linearGradient id="c2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--color-accent)"
+                      stopOpacity={0.4}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--color-accent)"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="oklch(1 0 0 / 5%)"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="day"
                   stroke="oklch(1 0 0 / 30%)"
@@ -310,9 +368,12 @@ function Dashboard() {
           </div>
           {recent.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                No conversations yet
+              </p>
               <p className="mt-1 text-xs text-muted-foreground/70">
-                Conversations will appear here once your agents start handling calls.
+                Conversations will appear here once your agents start handling
+                calls.
               </p>
             </div>
           ) : (
@@ -328,13 +389,17 @@ function Dashboard() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-xs font-semibold">{r.name}</div>
+                    <div className="truncate text-xs font-semibold">
+                      {r.name}
+                    </div>
                     <div className="truncate text-[11px] text-muted-foreground">
                       {r.agent} · {r.outcome}
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] text-muted-foreground">{r.time}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {r.time}
+                    </span>
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
                         r.status === "success"
@@ -388,11 +453,15 @@ function Dashboard() {
               <Database className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs text-muted-foreground">Knowledge Base</div>
+              <div className="text-xs text-muted-foreground">
+                Knowledge Base
+              </div>
               <div className="mt-0.5 font-semibold">No documents</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
-                <span className="text-muted-foreground">Upload documents to get started</span>
+                <span className="text-muted-foreground">
+                  Upload documents to get started
+                </span>
               </div>
             </div>
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
@@ -409,7 +478,9 @@ function Dashboard() {
               <div className="mt-0.5 font-semibold">No numbers</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
-                <span className="text-muted-foreground">Add a phone number to enable calls</span>
+                <span className="text-muted-foreground">
+                  Add a phone number to enable calls
+                </span>
               </div>
             </div>
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
@@ -422,11 +493,15 @@ function Dashboard() {
               <Shield className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs text-muted-foreground">Platform Security</div>
+              <div className="text-xs text-muted-foreground">
+                Platform Security
+              </div>
               <div className="mt-0.5 font-semibold">Active</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                <span className="text-success">Encrypted · Standard compliance</span>
+                <span className="text-success">
+                  Encrypted · Standard compliance
+                </span>
               </div>
             </div>
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
@@ -444,7 +519,8 @@ function Dashboard() {
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold">AI Recommendations</div>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Recommendations will appear here after analyzing your call data and agent performance.
+              Recommendations will appear here after analyzing your call data
+              and agent performance.
             </p>
           </div>
           <Button

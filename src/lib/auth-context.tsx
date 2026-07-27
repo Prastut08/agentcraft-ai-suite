@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import type { User } from "firebase/auth";
 import { useFirebaseAuth } from "./firebase-auth";
 import { auth, db } from "./firebase";
@@ -35,19 +41,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = snapshot.data() as DocumentData | undefined;
         setProfile({
           displayName:
-            typeof data?.displayName === "string" && data.displayName.trim().length > 0
+            typeof data?.displayName === "string" &&
+            data.displayName.trim().length > 0
               ? data.displayName
               : (user.displayName ?? user.email ?? "Workspace user"),
           businessName:
-            typeof data?.businessName === "string" && data.businessName.trim().length > 0
+            typeof data?.businessName === "string" &&
+            data.businessName.trim().length > 0
               ? data.businessName
-              : typeof data?.displayName === "string" && data.displayName.trim().length > 0
+              : typeof data?.displayName === "string" &&
+                  data.displayName.trim().length > 0
                 ? data.displayName
                 : (user.displayName ?? user.email ?? "Workspace"),
         });
       },
       (error) => {
-        console.warn("Firestore profile read failed, using auth fallback profile:", error);
+        console.warn(
+          "Firestore profile read failed, using auth fallback profile:",
+          error,
+        );
         setProfile({
           displayName: user.displayName ?? user.email ?? "Workspace user",
           businessName: user.displayName ?? user.email ?? "Workspace",
@@ -58,7 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, [user]);
 
-  return <AuthContext.Provider value={{ user, loading, profile }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, profile }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

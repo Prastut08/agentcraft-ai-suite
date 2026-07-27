@@ -1,4 +1,10 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
@@ -95,7 +101,9 @@ function NavLink({
       {!collapsed && (
         <>
           <span className="flex-1 truncate">{item.label}</span>
-          {item.accent && !active && <Sparkles className="h-3 w-3 text-primary/70" />}
+          {item.accent && !active && (
+            <Sparkles className="h-3 w-3 text-primary/70" />
+          )}
           {item.badge && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
               {item.badge}
@@ -115,7 +123,9 @@ function AppRoute() {
       <div className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
         <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-surface/70 px-5 py-4 shadow-xl backdrop-blur">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
-          <span className="text-sm text-muted-foreground">Checking your workspace access...</span>
+          <span className="text-sm text-muted-foreground">
+            Checking your workspace access...
+          </span>
         </div>
       </div>
     );
@@ -123,13 +133,21 @@ function AppRoute() {
 
   if (!user) {
     return (
-      <AuthScreen compact reason="Sign in to access your dashboard, agents, logs, and settings." />
+      <AuthScreen
+        compact
+        reason="Sign in to access your dashboard, agents, logs, and settings."
+      />
     );
   }
 
   return (
     <AppLayout
-      userName={profile?.displayName ?? user.displayName ?? user.email ?? "Workspace user"}
+      userName={
+        profile?.displayName ??
+        user.displayName ??
+        user.email ??
+        "Workspace user"
+      }
       userEmail={user.email ?? ""}
       workspaceName={
         profile?.businessName ??
@@ -194,8 +212,12 @@ function AppLayout({
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <div className="text-sm font-bold leading-none text-foreground">VoiceForge AI</div>
-                <div className="mt-0.5 text-[10px] text-muted-foreground">Enterprise Platform</div>
+                <div className="text-sm font-bold leading-none text-foreground">
+                  VoiceForge AI
+                </div>
+                <div className="mt-0.5 text-[10px] text-muted-foreground">
+                  Enterprise Platform
+                </div>
               </div>
             )}
           </Link>
@@ -217,7 +239,9 @@ function AppLayout({
         )}
 
         {/* Main nav */}
-        <nav className={`flex-1 space-y-0.5 overflow-y-auto py-3 ${collapsed ? "px-2" : "px-3"}`}>
+        <nav
+          className={`flex-1 space-y-0.5 overflow-y-auto py-3 ${collapsed ? "px-2" : "px-3"}`}
+        >
           {!collapsed && (
             <div className="mb-1 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
               Platform
@@ -227,7 +251,14 @@ function AppLayout({
             const active =
               pathname === item.to ||
               (item.to !== "/app/dashboard" && pathname.startsWith(item.to));
-            return <NavLink key={item.to} item={item} active={active} collapsed={collapsed} />;
+            return (
+              <NavLink
+                key={item.to}
+                item={item}
+                active={active}
+                collapsed={collapsed}
+              />
+            );
           })}
 
           {!collapsed && (
@@ -238,12 +269,21 @@ function AppLayout({
           {collapsed && <div className="my-2 h-px bg-sidebar-border" />}
           {navSystem.map((item) => {
             const active = pathname === item.to;
-            return <NavLink key={item.to} item={item} active={active} collapsed={collapsed} />;
+            return (
+              <NavLink
+                key={item.to}
+                item={item}
+                active={active}
+                collapsed={collapsed}
+              />
+            );
           })}
         </nav>
 
         {/* Usage + profile */}
-        <div className={`border-t border-sidebar-border ${collapsed ? "p-2" : "p-3"} space-y-2`}>
+        <div
+          className={`border-t border-sidebar-border ${collapsed ? "p-2" : "p-3"} space-y-2`}
+        >
           {!collapsed && (
             <div className="rounded-xl border border-border/60 bg-sidebar-accent/30 p-3">
               <div className="py-4 text-center text-xs text-muted-foreground">
@@ -289,7 +329,9 @@ function AppLayout({
             disabled={signingOut}
           >
             <LogOut className="h-4 w-4" />
-            {!collapsed && <span>{signingOut ? "Signing out..." : "Sign out"}</span>}
+            {!collapsed && (
+              <span>{signingOut ? "Signing out..." : "Sign out"}</span>
+            )}
           </Button>
         </div>
 
@@ -298,7 +340,11 @@ function AppLayout({
           onClick={() => setCollapsed((c) => !c)}
           className="absolute -right-3 top-20 flex h-6 w-6 items-center justify-center rounded-full border border-sidebar-border bg-sidebar text-muted-foreground shadow-sm transition hover:bg-sidebar-accent hover:text-foreground"
         >
-          {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+          {collapsed ? (
+            <ChevronRight className="h-3 w-3" />
+          ) : (
+            <ChevronLeft className="h-3 w-3" />
+          )}
         </button>
       </aside>
 
@@ -327,7 +373,9 @@ function AppLayout({
             {/* System status pill */}
             <div className="hidden items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-3 py-1 sm:flex">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
-              <span className="text-[10px] font-medium text-success">All systems operational</span>
+              <span className="text-[10px] font-medium text-success">
+                All systems operational
+              </span>
             </div>
 
             {/* Dark / Light Theme Toggle */}
@@ -397,7 +445,12 @@ function AppLayout({
       </div>
 
       {/* Click-away for notifications */}
-      {notifOpen && <div className="fixed inset-0 z-20" onClick={() => setNotifOpen(false)} />}
+      {notifOpen && (
+        <div
+          className="fixed inset-0 z-20"
+          onClick={() => setNotifOpen(false)}
+        />
+      )}
     </div>
   );
 }

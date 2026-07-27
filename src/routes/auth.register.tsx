@@ -52,7 +52,8 @@ function RegisterPage() {
       await signUpWithEmail(email, password, name, businessName);
       navigate({ to: "/app/dashboard", replace: true });
     } catch (err) {
-      const firebaseErr = err instanceof Error ? (err as unknown as FirebaseError) : undefined;
+      const firebaseErr =
+        err instanceof Error ? (err as unknown as FirebaseError) : undefined;
       const code = firebaseErr?.code ?? "";
       if (code === "auth/email-already-in-use") {
         setError("This email is already registered. Try signing in instead.");
@@ -63,7 +64,11 @@ function RegisterPage() {
       } else if (code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
-        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again.",
+        );
       }
     } finally {
       setSubmitting(false);
@@ -96,7 +101,9 @@ function RegisterPage() {
         <Card className="glass">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">Create your account</CardTitle>
-            <CardDescription>Start building AI voice agents in minutes</CardDescription>
+            <CardDescription>
+              Start building AI voice agents in minutes
+            </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
@@ -167,7 +174,10 @@ function RegisterPage() {
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 Already have an account?{" "}
-                <Link to="/auth/login" className="font-medium text-primary hover:underline">
+                <Link
+                  to="/auth/login"
+                  className="font-medium text-primary hover:underline"
+                >
                   Sign in
                 </Link>
               </p>

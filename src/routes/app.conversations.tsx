@@ -62,8 +62,22 @@ function ScoreRing({ score }: { score: number }) {
   );
 }
 
+interface Message {
+  s: string;
+  t: string;
+}
+
+interface Conversation {
+  name: string;
+  time: string;
+  agent: string;
+  outcome: string;
+  dur: string;
+  score?: number;
+}
+
 function Conversations() {
-  const convos: any[] = [];
+  const convos: Conversation[] = [];
   const [selected, setSelected] = useState<number | null>(null);
   const active = selected !== null ? convos[selected] : null;
 
@@ -108,8 +122,12 @@ function Conversations() {
             {convos.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <PhoneIncoming className="mb-3 h-10 w-10 text-muted-foreground/40" />
-                <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
-                <p className="mt-1 text-xs text-muted-foreground/70">Incoming calls will appear here automatically.</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  No conversations yet
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/70">
+                  Incoming calls will appear here automatically.
+                </p>
               </div>
             ) : (
               convos.map((c, i) => (
@@ -131,8 +149,12 @@ function Conversations() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="truncate text-sm font-semibold">{c.name}</span>
-                      <span className="shrink-0 text-[10px] text-muted-foreground">{c.time}</span>
+                      <span className="truncate text-sm font-semibold">
+                        {c.name}
+                      </span>
+                      <span className="shrink-0 text-[10px] text-muted-foreground">
+                        {c.time}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Bot className="h-3 w-3" />
@@ -165,8 +187,12 @@ function Conversations() {
           {!active ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <PhoneIncoming className="mb-3 h-12 w-12 text-muted-foreground/40" />
-              <p className="text-sm font-medium text-muted-foreground">Select a conversation to view transcript</p>
-              <p className="mt-1 text-xs text-muted-foreground/70">Choose a call from the list to see details.</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Select a conversation to view transcript
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Choose a call from the list to see details.
+              </p>
             </div>
           ) : (
             <>
@@ -212,15 +238,27 @@ function Conversations() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="border-border/60">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border/60"
+                    >
                       <Play className="mr-1.5 h-3.5 w-3.5" />
                       Play Audio
                     </Button>
-                    <Button variant="outline" size="sm" className="border-border/60">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border/60"
+                    >
                       <Download className="mr-1.5 h-3.5 w-3.5" />
                       Transcript
                     </Button>
-                    <Button variant="outline" size="sm" className="border-border/60">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border/60"
+                    >
                       <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -228,7 +266,11 @@ function Conversations() {
 
                 {/* Audio waveform placeholder */}
                 <div className="mt-4 flex h-10 items-center gap-1 overflow-hidden rounded-xl bg-muted/30 px-4">
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-primary">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0 text-primary"
+                  >
                     <Play className="h-4 w-4" />
                   </Button>
                   <div className="flex flex-1 items-end gap-0.5 px-2">
@@ -236,21 +278,28 @@ function Conversations() {
                       <div
                         key={i}
                         className="w-px rounded-full bg-primary/40 transition-all"
-                        style={{ height: `${8 + Math.sin(i * 0.4) * 6 + Math.random() * 10}px` }}
+                        style={{
+                          height: `${8 + Math.sin(i * 0.4) * 6 + Math.random() * 10}px`,
+                        }}
                       />
                     ))}
                   </div>
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">3:42</span>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    3:42
+                  </span>
                 </div>
               </div>
 
               {/* Transcript */}
               <div className="flex-1 overflow-y-auto p-5">
                 <div className="space-y-4">
-                  {active.transcript?.map((m: any, i: number) => {
+                  {active.transcript?.map((m: Message, i: number) => {
                     const isAgent = m.s === active.agent;
                     return (
-                      <div key={i} className={`flex gap-3 ${isAgent ? "" : "flex-row-reverse"}`}>
+                      <div
+                        key={i}
+                        className={`flex gap-3 ${isAgent ? "" : "flex-row-reverse"}`}
+                      >
                         <Avatar className="h-8 w-8 shrink-0">
                           <AvatarFallback
                             className={`text-xs font-semibold ${isAgent ? "bg-primary/20 text-primary" : "bg-surface-2"}`}
@@ -312,11 +361,17 @@ function Conversations() {
                     <div className="space-y-1 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Contact</span>
-                        <Badge className="bg-muted/50 text-muted-foreground text-[9px]">Pending</Badge>
+                        <Badge className="bg-muted/50 text-muted-foreground text-[9px]">
+                          Pending
+                        </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Appointment</span>
-                        <Badge className="bg-muted/50 text-muted-foreground text-[9px]">Pending</Badge>
+                        <span className="text-muted-foreground">
+                          Appointment
+                        </span>
+                        <Badge className="bg-muted/50 text-muted-foreground text-[9px]">
+                          Pending
+                        </Badge>
                       </div>
                     </div>
                   </div>

@@ -2,13 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
+import {
+  Search,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneMissed,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/logs")({
   component: Logs,
 });
 
-const logs: { id: string; from: string; to: string; agent: string; dir: string; dur: string; outcome: string; time: string }[] = [];
+const logs: {
+  id: string;
+  from: string;
+  to: string;
+  agent: string;
+  dir: string;
+  dur: string;
+  outcome: string;
+  time: string;
+}[] = [];
 
 function Logs() {
   return (
@@ -24,7 +38,10 @@ function Logs() {
         <div className="mb-4 flex items-center gap-3">
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search caller, agent, outcome…" className="pl-9" />
+            <Input
+              placeholder="Search caller, agent, outcome…"
+              className="pl-9"
+            />
           </div>
         </div>
         <table className="w-full text-sm">
@@ -41,17 +58,29 @@ function Logs() {
           <tbody>
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">
+                <td
+                  colSpan={6}
+                  className="p-8 text-center text-sm text-muted-foreground"
+                >
                   No call logs yet.
                 </td>
               </tr>
             ) : (
               logs.map((l) => (
-                <tr key={l.id} className="border-b border-border/40 last:border-0 hover:bg-muted/30">
+                <tr
+                  key={l.id}
+                  className="border-b border-border/40 last:border-0 hover:bg-muted/30"
+                >
                   <td className="p-3">
-                    {l.dir === "in" && <PhoneIncoming className="h-4 w-4 text-success" />}
-                    {l.dir === "out" && <PhoneOutgoing className="h-4 w-4 text-primary" />}
-                    {l.dir === "miss" && <PhoneMissed className="h-4 w-4 text-destructive" />}
+                    {l.dir === "in" && (
+                      <PhoneIncoming className="h-4 w-4 text-success" />
+                    )}
+                    {l.dir === "out" && (
+                      <PhoneOutgoing className="h-4 w-4 text-primary" />
+                    )}
+                    {l.dir === "miss" && (
+                      <PhoneMissed className="h-4 w-4 text-destructive" />
+                    )}
                   </td>
                   <td className="p-3 font-mono text-xs">{l.from}</td>
                   <td className="p-3">{l.agent}</td>
@@ -59,7 +88,9 @@ function Logs() {
                   <td className="p-3">
                     <Badge variant="outline">{l.outcome}</Badge>
                   </td>
-                  <td className="p-3 text-xs text-muted-foreground">{l.time}</td>
+                  <td className="p-3 text-xs text-muted-foreground">
+                    {l.time}
+                  </td>
                 </tr>
               ))
             )}

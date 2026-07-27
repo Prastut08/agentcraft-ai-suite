@@ -36,7 +36,13 @@ import {
   Globe,
 } from "lucide-react";
 import { toast } from "sonner";
-import { doc, getDoc, serverTimestamp, setDoc, collection } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  collection,
+} from "firebase/firestore";
 import { onSnapshot, type DocumentData } from "firebase/firestore";
 
 import { useAuth } from "@/lib/auth-context";
@@ -135,18 +141,25 @@ type BusinessInfo = {
   address: string;
 };
 
-function normalizeBusinessInfo(info: Partial<BusinessInfo>): Partial<BusinessInfo> {
+function normalizeBusinessInfo(
+  info: Partial<BusinessInfo>,
+): Partial<BusinessInfo> {
   return {
-    businessName: typeof info.businessName === "string" ? info.businessName : "",
+    businessName:
+      typeof info.businessName === "string" ? info.businessName : "",
     industry: typeof info.industry === "string" ? info.industry : "",
     website: typeof info.website === "string" ? info.website : "",
     phoneNumber: typeof info.phoneNumber === "string" ? info.phoneNumber : "",
     email: typeof info.email === "string" ? info.email : "",
     timeZone: typeof info.timeZone === "string" ? info.timeZone : "pst",
-    businessHours: typeof info.businessHours === "string" ? info.businessHours : "",
-    languagesSpoken: typeof info.languagesSpoken === "string" ? info.languagesSpoken : "",
+    businessHours:
+      typeof info.businessHours === "string" ? info.businessHours : "",
+    languagesSpoken:
+      typeof info.languagesSpoken === "string" ? info.languagesSpoken : "",
     businessDescription:
-      typeof info.businessDescription === "string" ? info.businessDescription : "",
+      typeof info.businessDescription === "string"
+        ? info.businessDescription
+        : "",
     address: typeof info.address === "string" ? info.address : "",
   };
 }
@@ -155,8 +168,13 @@ function CreateWizard() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(["AI Receptionist"]);
-  const [selectedResp, setSelectedResp] = useState<string[]>(["Answer Calls", "Book Appointments"]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([
+    "AI Receptionist",
+  ]);
+  const [selectedResp, setSelectedResp] = useState<string[]>([
+    "Answer Calls",
+    "Book Appointments",
+  ]);
   const [tone, setTone] = useState("Professional");
   const [voice, setVoice] = useState("Aria");
   const [humor, setHumor] = useState([30]);
@@ -167,14 +185,17 @@ function CreateWizard() {
   const selectedStyle: React.CSSProperties = {
     borderColor: "var(--color-primary)",
     background: "color-mix(in oklch, var(--color-primary) 12%, transparent)",
-    boxShadow: "0 0 0 1px color-mix(in oklch, var(--color-primary) 30%, transparent)",
+    boxShadow:
+      "0 0 0 1px color-mix(in oklch, var(--color-primary) 30%, transparent)",
     position: "relative",
     zIndex: 1,
   };
   const [savingDraft, setSavingDraft] = useState(false);
   const hydratedDraftRef = useRef(false);
   const stepHydratedRef = useRef(false);
-  const saveTimerRef = useRef<any>(undefined);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const initialBusinessInfo = {
     businessName: "",
     industry: "",
@@ -187,12 +208,30 @@ function CreateWizard() {
     businessDescription: "",
     address: "",
   };
-  const [businessInfo, setBusinessInfo] = useState<BusinessInfo>(initialBusinessInfo);
+  const [businessInfo, setBusinessInfo] =
+    useState<BusinessInfo>(initialBusinessInfo);
   const businessInfoRef = useRef<BusinessInfo>(initialBusinessInfo);
   const selectedTypesRef = useRef<string[]>(["AI Receptionist"]);
-  const selectedRespRef = useRef<string[]>(["Answer Calls", "Book Appointments"]);
-  const [personality, setPersonality] = useState({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70, professionalism: 85, confidence: 75 });
-  const personalityRef = useRef({ tone: "Professional", voice: "Aria", humor: 30, empathy: 70, professionalism: 85, confidence: 75 });
+  const selectedRespRef = useRef<string[]>([
+    "Answer Calls",
+    "Book Appointments",
+  ]);
+  const [personality, setPersonality] = useState({
+    tone: "Professional",
+    voice: "Aria",
+    humor: 30,
+    empathy: 70,
+    professionalism: 85,
+    confidence: 75,
+  });
+  const personalityRef = useRef({
+    tone: "Professional",
+    voice: "Aria",
+    humor: 30,
+    empathy: 70,
+    professionalism: 85,
+    confidence: 75,
+  });
   const [callFlow, setCallFlow] = useState<string[]>([]);
   const callFlowRef = useRef<string[]>([]);
   const [prompt, setPrompt] = useState("");
@@ -204,7 +243,12 @@ function CreateWizard() {
   const businessDescription =
     businessInfo.businessDescription.trim() ||
     "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
-  const toggle = (arr: string[], set: (v: string[]) => void, ref: { current: string[] }, v: string) => {
+  const toggle = (
+    arr: string[],
+    set: (v: string[]) => void,
+    ref: { current: string[] },
+    v: string,
+  ) => {
     const next = arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
     set(next);
     ref.current = next;
@@ -215,20 +259,34 @@ function CreateWizard() {
         { merge: true },
       )
         .then(() => console.log("[create] saved agentType:", next))
-        .catch((error) => console.error("[create] failed to save agentType:", error));
+        .catch((error) =>
+          console.error("[create] failed to save agentType:", error),
+        );
     }
   };
 
   const next = () => setStep((s) => Math.min(10, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
-  const updatePersonality = useCallback((changes: Partial<{ tone: string; voice: string; humor: number; empathy: number; professionalism: number; confidence: number }>) => {
-    setPersonality((prev) => {
-      const next = { ...prev, ...changes };
-      personalityRef.current = next;
-      return next;
-    });
-  }, []);
+  const updatePersonality = useCallback(
+    (
+      changes: Partial<{
+        tone: string;
+        voice: string;
+        humor: number;
+        empathy: number;
+        professionalism: number;
+        confidence: number;
+      }>,
+    ) => {
+      setPersonality((prev) => {
+        const next = { ...prev, ...changes };
+        personalityRef.current = next;
+        return next;
+      });
+    },
+    [],
+  );
 
   const setCallFlowState = useCallback((next: string[]) => {
     callFlowRef.current = next;
@@ -264,7 +322,10 @@ function CreateWizard() {
   }, []);
 
   const setProfessionalismState = useCallback((next: number[]) => {
-    personalityRef.current = { ...personalityRef.current, professionalism: next[0] };
+    personalityRef.current = {
+      ...personalityRef.current,
+      professionalism: next[0],
+    };
     setProfessionalism(next);
   }, []);
 
@@ -274,7 +335,10 @@ function CreateWizard() {
   }, []);
 
   useEffect(() => {
-    if (businessInfo.businessName.trim().length === 0 && profile?.businessName) {
+    if (
+      businessInfo.businessName.trim().length === 0 &&
+      profile?.businessName
+    ) {
       const nextBusinessInfo = {
         ...businessInfoRef.current,
         businessName: profile.businessName,
@@ -314,7 +378,9 @@ function CreateWizard() {
         setBusinessInfo((current) => {
           const nextBusinessInfo = {
             ...current,
-            ...normalizeBusinessInfo(data.businessInfo as Partial<BusinessInfo>),
+            ...normalizeBusinessInfo(
+              data.businessInfo as Partial<BusinessInfo>,
+            ),
           };
           businessInfoRef.current = nextBusinessInfo;
           return nextBusinessInfo;
@@ -322,15 +388,25 @@ function CreateWizard() {
       }
 
       if (Array.isArray(data.agentType)) {
-        setSelectedTypes(data.agentType.filter((item): item is string => typeof item === "string"));
-        selectedTypesRef.current = data.agentType.filter((item): item is string => typeof item === "string");
+        setSelectedTypes(
+          data.agentType.filter(
+            (item): item is string => typeof item === "string",
+          ),
+        );
+        selectedTypesRef.current = data.agentType.filter(
+          (item): item is string => typeof item === "string",
+        );
       }
 
       if (Array.isArray(data.responsibilities)) {
         setSelectedResp(
-          data.responsibilities.filter((item): item is string => typeof item === "string"),
+          data.responsibilities.filter(
+            (item): item is string => typeof item === "string",
+          ),
         );
-        selectedRespRef.current = data.responsibilities.filter((item): item is string => typeof item === "string");
+        selectedRespRef.current = data.responsibilities.filter(
+          (item): item is string => typeof item === "string",
+        );
       }
 
       if (typeof data.personality?.tone === "string") {
@@ -360,10 +436,12 @@ function CreateWizard() {
       }
 
       if (Array.isArray(data.callFlow)) {
-        const flow = data.callFlow.filter((item): item is string => typeof item === "string");
+        const flow = data.callFlow.filter(
+          (item): item is string => typeof item === "string",
+        );
         setCallFlowState(flow);
       }
-     });
+    });
 
     return unsubscribe;
   }, [user]);
@@ -374,7 +452,8 @@ function CreateWizard() {
         return;
       }
 
-      const nextBusinessName = nextBusinessInfo.businessName.trim() || "Bright Dental";
+      const nextBusinessName =
+        nextBusinessInfo.businessName.trim() || "Bright Dental";
       const nextBusinessDescription =
         nextBusinessInfo.businessDescription.trim() ||
         "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
@@ -421,7 +500,8 @@ function CreateWizard() {
     }
 
     const currentBusinessInfo = businessInfoRef.current;
-    const nextBusinessName = currentBusinessInfo.businessName.trim() || "Bright Dental";
+    const nextBusinessName =
+      currentBusinessInfo.businessName.trim() || "Bright Dental";
     const nextBusinessDescription =
       currentBusinessInfo.businessDescription.trim() ||
       "We are a modern dental practice offering cosmetic, restorative, and preventive care…";
@@ -443,7 +523,10 @@ function CreateWizard() {
       updatedAt: serverTimestamp(),
     };
 
-    console.log("[create] saveDraft writing sections:", Object.keys(draft.sections));
+    console.log(
+      "[create] saveDraft writing sections:",
+      Object.keys(draft.sections),
+    );
 
     setSavingDraft(true);
     try {
@@ -457,13 +540,19 @@ function CreateWizard() {
         { merge: true },
       );
 
-      await setDoc(doc(db, "users", user.uid, "createAgentDrafts", "current"), draft, {
-        merge: true,
-      });
+      await setDoc(
+        doc(db, "users", user.uid, "createAgentDrafts", "current"),
+        draft,
+        {
+          merge: true,
+        },
+      );
       console.log("[create] saveDraft success");
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Unable to save your draft right now.";
+        error instanceof Error
+          ? error.message
+          : "Unable to save your draft right now.";
       console.error("Failed to save create-agent draft", error);
       toast.error(message);
       throw error;
@@ -519,7 +608,9 @@ function CreateWizard() {
 
       const newAgent = {
         id: agentId,
-        name: selectedTypes[0] ? selectedTypes[0].split(" ")[0] || "Aria" : "Aria",
+        name: selectedTypes[0]
+          ? selectedTypes[0].split(" ")[0] || "Aria"
+          : "Aria",
         role: selectedTypes.join(", ") || "AI Receptionist",
         status: "Live",
         calls: 0,
@@ -534,14 +625,14 @@ function CreateWizard() {
         businessInfo,
         selectedTypes,
         selectedResp,
-         personality: {
-           tone,
-           voice,
-           humor: humor[0],
-           empathy: empathy[0],
-           professionalism: professionalism[0],
-           confidence: confidence[0],
-         },
+        personality: {
+          tone,
+          voice,
+          humor: humor[0],
+          empathy: empathy[0],
+          professionalism: professionalism[0],
+          confidence: confidence[0],
+        },
       };
 
       await setDoc(newAgentDoc, newAgent);
@@ -552,7 +643,7 @@ function CreateWizard() {
         {
           step: 1,
         },
-        { merge: true }
+        { merge: true },
       );
 
       toast.success(`Agent ${newAgent.name} deployed successfully!`);
@@ -597,7 +688,9 @@ function CreateWizard() {
         doc(db, "users", user.uid, "createAgentDrafts", "current"),
         { responsibilities: selectedRespRef.current },
         { merge: true },
-      ).catch((error) => console.error("Autosave responsibilities failed", error));
+      ).catch((error) =>
+        console.error("Autosave responsibilities failed", error),
+      );
     }, 400);
 
     return () => window.clearTimeout(timer);
@@ -620,7 +713,11 @@ function CreateWizard() {
   }, [user, personality]);
 
   useEffect(() => {
-    if (!user || !hydratedDraftRef.current || personalityRef.current.voice === voice) {
+    if (
+      !user ||
+      !hydratedDraftRef.current ||
+      personalityRef.current.voice === voice
+    ) {
       return;
     }
 
@@ -721,7 +818,9 @@ function CreateWizard() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold">Tell us about your business</h2>
+                <h2 className="text-xl font-semibold">
+                  Tell us about your business
+                </h2>
                 <p className="text-sm text-muted-foreground">
                   This helps the AI sound like it works for you.
                 </p>
@@ -731,13 +830,17 @@ function CreateWizard() {
                   <Input
                     placeholder="Bright Dental"
                     value={businessInfo.businessName}
-                    onChange={(event) => updateBusinessInfo({ businessName: event.target.value })}
+                    onChange={(event) =>
+                      updateBusinessInfo({ businessName: event.target.value })
+                    }
                   />
                 </Field>
                 <Field label="Industry">
                   <Select
                     value={businessInfo.industry}
-                    onValueChange={(value) => updateBusinessInfo({ industry: value })}
+                    onValueChange={(value) =>
+                      updateBusinessInfo({ industry: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select…" />
@@ -764,14 +867,18 @@ function CreateWizard() {
                   <Input
                     placeholder="https://brightdental.com"
                     value={businessInfo.website}
-                    onChange={(event) => updateBusinessInfo({ website: event.target.value })}
+                    onChange={(event) =>
+                      updateBusinessInfo({ website: event.target.value })
+                    }
                   />
                 </Field>
                 <Field label="Phone Number">
                   <Input
                     placeholder="+1 (415) 555 0100"
                     value={businessInfo.phoneNumber}
-                    onChange={(event) => updateBusinessInfo({ phoneNumber: event.target.value })}
+                    onChange={(event) =>
+                      updateBusinessInfo({ phoneNumber: event.target.value })
+                    }
                   />
                 </Field>
                 <Field label="Email">
@@ -779,13 +886,17 @@ function CreateWizard() {
                     type="email"
                     placeholder="hello@brightdental.com"
                     value={businessInfo.email}
-                    onChange={(event) => updateBusinessInfo({ email: event.target.value })}
+                    onChange={(event) =>
+                      updateBusinessInfo({ email: event.target.value })
+                    }
                   />
                 </Field>
                 <Field label="Time Zone">
                   <Select
                     value={businessInfo.timeZone}
-                    onValueChange={(value) => updateBusinessInfo({ timeZone: value })}
+                    onValueChange={(value) =>
+                      updateBusinessInfo({ timeZone: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -802,7 +913,9 @@ function CreateWizard() {
                   <Input
                     placeholder="Mon–Fri, 9am – 6pm"
                     value={businessInfo.businessHours}
-                    onChange={(event) => updateBusinessInfo({ businessHours: event.target.value })}
+                    onChange={(event) =>
+                      updateBusinessInfo({ businessHours: event.target.value })
+                    }
                   />
                 </Field>
                 <Field label="Languages Spoken">
@@ -810,7 +923,9 @@ function CreateWizard() {
                     placeholder="English, Spanish"
                     value={businessInfo.languagesSpoken}
                     onChange={(event) =>
-                      updateBusinessInfo({ languagesSpoken: event.target.value })
+                      updateBusinessInfo({
+                        languagesSpoken: event.target.value,
+                      })
                     }
                   />
                 </Field>
@@ -821,7 +936,9 @@ function CreateWizard() {
                       placeholder="We are a modern dental practice offering cosmetic, restorative, and preventive care…"
                       value={businessInfo.businessDescription}
                       onChange={(event) =>
-                        updateBusinessInfo({ businessDescription: event.target.value })
+                        updateBusinessInfo({
+                          businessDescription: event.target.value,
+                        })
                       }
                     />
                   </Field>
@@ -831,7 +948,9 @@ function CreateWizard() {
                     <Input
                       placeholder="123 Market St, San Francisco, CA"
                       value={businessInfo.address}
-                      onChange={(event) => updateBusinessInfo({ address: event.target.value })}
+                      onChange={(event) =>
+                        updateBusinessInfo({ address: event.target.value })
+                      }
                     />
                   </Field>
                 </div>
@@ -855,7 +974,14 @@ function CreateWizard() {
                   return (
                     <button
                       key={t}
-                      onClick={() => toggle(selectedTypes, setSelectedTypes, selectedTypesRef, t)}
+                      onClick={() =>
+                        toggle(
+                          selectedTypes,
+                          setSelectedTypes,
+                          selectedTypesRef,
+                          t,
+                        )
+                      }
                       className={`rounded-xl border p-4 text-left transition ${active ? "" : "border-border/60 text-foreground hover:border-border"}`}
                       style={active ? selectedStyle : undefined}
                     >
@@ -876,7 +1002,9 @@ function CreateWizard() {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold">Choose responsibilities</h2>
+                <h2 className="text-xl font-semibold">
+                  Choose responsibilities
+                </h2>
                 <p className="text-sm text-muted-foreground">
                   What should this agent actually do on a call?
                 </p>
@@ -887,11 +1015,20 @@ function CreateWizard() {
                   return (
                     <button
                       key={r}
-                      onClick={() => toggle(selectedResp, setSelectedResp, selectedRespRef, r)}
+                      onClick={() =>
+                        toggle(
+                          selectedResp,
+                          setSelectedResp,
+                          selectedRespRef,
+                          r,
+                        )
+                      }
                       className={`rounded-full border px-4 py-2 text-sm transition ${active ? "" : "border-border/60 text-muted-foreground hover:border-border"}`}
                       style={active ? selectedStyle : undefined}
                     >
-                      {active && <Check className="mr-1.5 inline h-3.5 w-3.5 text-primary" />}
+                      {active && (
+                        <Check className="mr-1.5 inline h-3.5 w-3.5 text-primary" />
+                      )}
                       {r}
                     </button>
                   );
@@ -911,12 +1048,15 @@ function CreateWizard() {
               <div>
                 <h2 className="text-xl font-semibold">Upload your knowledge</h2>
                 <p className="text-sm text-muted-foreground">
-                  PDFs, docs, spreadsheets, FAQs, websites — anything you'd hand a new employee.
+                  PDFs, docs, spreadsheets, FAQs, websites — anything you'd hand
+                  a new employee.
                 </p>
               </div>
               <div className="rounded-2xl border-2 border-dashed border-border/60 p-10 text-center transition hover:border-primary/50">
                 <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="mt-3 font-medium">Drop files here or click to upload</p>
+                <p className="mt-3 font-medium">
+                  Drop files here or click to upload
+                </p>
                 <p className="text-xs text-muted-foreground">
                   PDF, DOCX, TXT, CSV, XLSX, PNG · up to 50MB
                 </p>
@@ -943,11 +1083,13 @@ function CreateWizard() {
                 ))}
               </div>
               <div className="grid gap-3 md:grid-cols-4">
-                {["Paste text", "Add Q&A", "Import URL", "Connect Notion"].map((a) => (
-                  <Button key={a} variant="outline">
-                    <Plus className="mr-2 h-4 w-4" /> {a}
-                  </Button>
-                ))}
+                {["Paste text", "Add Q&A", "Import URL", "Connect Notion"].map(
+                  (a) => (
+                    <Button key={a} variant="outline">
+                      <Plus className="mr-2 h-4 w-4" /> {a}
+                    </Button>
+                  ),
+                )}
               </div>
             </div>
           )}
@@ -965,7 +1107,10 @@ function CreateWizard() {
                   {tones.map((t) => (
                     <button
                       key={t}
-                      onClick={() => { setTone(t); updatePersonality({ tone: t }); }}
+                      onClick={() => {
+                        setTone(t);
+                        updatePersonality({ tone: t });
+                      }}
                       className={`rounded-full border px-4 py-1.5 text-sm transition ${tone === t ? "" : "border-border/60 text-muted-foreground"}`}
                       style={tone === t ? selectedStyle : undefined}
                     >
@@ -1004,8 +1149,16 @@ function CreateWizard() {
               <div className="space-y-5">
                 <SliderRow label="Humor" v={humor} setV={setHumorState} />
                 <SliderRow label="Empathy" v={empathy} setV={setEmpathyState} />
-                <SliderRow label="Professionalism" v={professionalism} setV={setProfessionalismState} />
-                <SliderRow label="Confidence" v={confidence} setV={setConfidenceState} />
+                <SliderRow
+                  label="Professionalism"
+                  v={professionalism}
+                  setV={setProfessionalismState}
+                />
+                <SliderRow
+                  label="Confidence"
+                  v={confidence}
+                  setV={setConfidenceState}
+                />
               </div>
             </div>
           )}
@@ -1024,7 +1177,10 @@ function CreateWizard() {
                   return (
                     <button
                       key={v.name}
-                      onClick={() => { setVoice(v.name); updatePersonality({ voice: v.name }); }}
+                      onClick={() => {
+                        setVoice(v.name);
+                        updatePersonality({ voice: v.name });
+                      }}
                       className={`rounded-2xl border p-5 text-left transition ${active ? "" : "border-border/60"}`}
                       style={active ? selectedStyle : undefined}
                     >
@@ -1037,7 +1193,9 @@ function CreateWizard() {
                         </Button>
                       </div>
                       <div className="mt-3 font-semibold">{v.name}</div>
-                      <div className="text-xs text-muted-foreground">{v.tag}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {v.tag}
+                      </div>
                       <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                         <Globe className="h-3 w-3" /> {v.accent}
                       </div>
@@ -1106,7 +1264,7 @@ function CreateWizard() {
                       "CRM Lookup",
                       "Payment",
                       "End Call",
-                      ].map((b) => (
+                    ].map((b) => (
                       <button
                         key={b}
                         onClick={() => addCallFlowBlock(b)}
@@ -1118,32 +1276,44 @@ function CreateWizard() {
                   </div>
                 </Card>
                 <div className="relative min-h-[420px] rounded-2xl border border-border/60 grid-bg p-6">
-                   {callFlow.length === 0 ? (
-                     <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-muted-foreground">
-                       Click blocks from the sidebar to build your call flow
-                     </div>
-                   ) : (
-                     <div className="space-y-3">
-                       {callFlow.map((block, i) => (
-                         <div
-                           key={block}
-                           className="flex items-center gap-3 rounded-xl border border-border/60 bg-primary/10 p-3 text-sm"
-                         >
-                           <div className="grid h-7 w-7 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
-                             {i + 1}
-                           </div>
-                           <span className="flex-1 font-medium">{block}</span>
-                           <button
-                             onClick={() => removeCallFlowBlock(i)}
-                             className="text-muted-foreground hover:text-destructive"
-                           >
-                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                           </button>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                 </div>
+                  {callFlow.length === 0 ? (
+                    <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-muted-foreground">
+                      Click blocks from the sidebar to build your call flow
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {callFlow.map((block, i) => (
+                        <div
+                          key={block}
+                          className="flex items-center gap-3 rounded-xl border border-border/60 bg-primary/10 p-3 text-sm"
+                        >
+                          <div className="grid h-7 w-7 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
+                            {i + 1}
+                          </div>
+                          <span className="flex-1 font-medium">{block}</span>
+                          <button
+                            onClick={() => removeCallFlowBlock(i)}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M18 6 6 18" />
+                              <path d="m6 6 12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1151,8 +1321,12 @@ function CreateWizard() {
           {step === 8 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold">Connect a phone number</h2>
-                <p className="text-sm text-muted-foreground">Bring your own or buy a fresh one.</p>
+                <h2 className="text-xl font-semibold">
+                  Connect a phone number
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Bring your own or buy a fresh one.
+                </p>
               </div>
               <div className="grid gap-3 md:grid-cols-4">
                 {[
@@ -1170,28 +1344,36 @@ function CreateWizard() {
                     className="rounded-xl border border-border/60 p-4 text-left hover:border-primary/50"
                   >
                     <div className="font-medium">{p}</div>
-                    <div className="text-xs text-muted-foreground">Not connected</div>
+                    <div className="text-xs text-muted-foreground">
+                      Not connected
+                    </div>
                   </button>
                 ))}
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <Card className="glass p-5">
                   <div className="font-medium">Buy a new number</div>
-                  <p className="mt-1 text-xs text-muted-foreground">From $2 / mo · 40+ countries</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    From $2 / mo · 40+ countries
+                  </p>
                   <Button className="mt-3" variant="outline">
                     Search numbers
                   </Button>
                 </Card>
                 <Card className="glass p-5">
                   <div className="font-medium">Connect existing</div>
-                  <p className="mt-1 text-xs text-muted-foreground">SIP trunk or provider port</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    SIP trunk or provider port
+                  </p>
                   <Button className="mt-3" variant="outline">
                     Add number
                   </Button>
                 </Card>
                 <Card className="glass p-5">
                   <div className="font-medium">Forward business line</div>
-                  <p className="mt-1 text-xs text-muted-foreground">Route overflow calls</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Route overflow calls
+                  </p>
                   <Button className="mt-3" variant="outline">
                     Set forwarding
                   </Button>
@@ -1205,12 +1387,15 @@ function CreateWizard() {
               <div>
                 <h2 className="text-xl font-semibold">Your generated prompt</h2>
                 <p className="text-sm text-muted-foreground">
-                  Auto-generated from your business info, knowledge, and personality settings.
+                  Auto-generated from your business info, knowledge, and
+                  personality settings.
                 </p>
               </div>
               <div className="overflow-hidden rounded-2xl border border-border/60 bg-[oklch(0.12_0.03_250)]">
                 <div className="flex items-center justify-between border-b border-border/60 px-4 py-2 text-xs">
-                  <span className="font-mono text-muted-foreground">system_prompt.md</span>
+                  <span className="font-mono text-muted-foreground">
+                    system_prompt.md
+                  </span>
                   <div className="flex gap-2">
                     <Button size="sm" variant="ghost">
                       Copy
@@ -1268,11 +1453,19 @@ If caller requests a human → warm transfer to reception.
                 className="p-6 text-center brand-glow"
                 style={{ background: "var(--gradient-brand)" }}
               >
-                <div className="text-lg font-semibold text-brand-foreground">Ready to go live</div>
+                <div className="text-lg font-semibold text-brand-foreground">
+                  Ready to go live
+                </div>
                 <p className="mt-1 text-sm text-brand-foreground/80">
-                  Deploying takes about 30 seconds. Your agent will start answering immediately.
+                  Deploying takes about 30 seconds. Your agent will start
+                  answering immediately.
                 </p>
-                <Button size="lg" variant="secondary" className="mt-4" onClick={handleDeploy}>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="mt-4"
+                  onClick={handleDeploy}
+                >
                   <Rocket className="mr-2 h-4 w-4" /> Deploy agent
                 </Button>
               </Card>
@@ -1287,10 +1480,10 @@ If caller requests a human → warm transfer to reception.
             >
               <ChevronLeft className="mr-1 h-4 w-4" /> Back
             </Button>
-            <div className="text-xs text-muted-foreground">Step {step} of 10</div>
-            <Button
-              onClick={handleNext}
-            >
+            <div className="text-xs text-muted-foreground">
+              Step {step} of 10
+            </div>
+            <Button onClick={handleNext}>
               Continue <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
@@ -1300,10 +1493,18 @@ If caller requests a human → warm transfer to reception.
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+      <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );
@@ -1332,7 +1533,9 @@ function SliderRow({
 function Summary({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border/60 p-4">
-      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       <div className="mt-1 font-medium">{value}</div>
     </div>
   );

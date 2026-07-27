@@ -41,7 +41,9 @@ function LoginPage() {
       await signInAsGuest();
       navigate({ to: "/app/dashboard", replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start demo session.");
+      setError(
+        err instanceof Error ? err.message : "Unable to start demo session.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -56,9 +58,13 @@ function LoginPage() {
       await signInWithEmail(email, password);
       navigate({ to: "/app/dashboard", replace: true });
     } catch (err) {
-      const firebaseErr = err instanceof Error ? (err as unknown as FirebaseError) : undefined;
+      const firebaseErr =
+        err instanceof Error ? (err as unknown as FirebaseError) : undefined;
       const code = firebaseErr?.code ?? "";
-      if (code === "auth/user-not-found" || code === "auth/invalid-credential") {
+      if (
+        code === "auth/user-not-found" ||
+        code === "auth/invalid-credential"
+      ) {
         setError("No account found with this email/password combination.");
       } else if (code === "auth/wrong-password") {
         setError("Incorrect password. Please try again.");
@@ -67,7 +73,11 @@ function LoginPage() {
       } else if (code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
-        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again.",
+        );
       }
     } finally {
       setSubmitting(false);
@@ -100,7 +110,9 @@ function LoginPage() {
         <Card className="glass">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
+            <CardDescription>
+              Sign in to your account to continue
+            </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
@@ -166,7 +178,10 @@ function LoginPage() {
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 Don't have an account?{" "}
-                <Link to="/auth/register" className="font-medium text-primary hover:underline">
+                <Link
+                  to="/auth/register"
+                  className="font-medium text-primary hover:underline"
+                >
                   Create one
                 </Link>
               </p>

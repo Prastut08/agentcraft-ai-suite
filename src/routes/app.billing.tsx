@@ -13,18 +13,22 @@ function Billing() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Billing</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your plan, usage, and invoices.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Manage your plan, usage, and invoices.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="glass p-6 md:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs uppercase text-muted-foreground">Current plan</div>
-              <div className="mt-1 text-2xl font-bold">
-                No active plan
+              <div className="text-xs uppercase text-muted-foreground">
+                Current plan
               </div>
-              <div className="text-sm text-muted-foreground">Choose a plan to get started.</div>
+              <div className="mt-1 text-2xl font-bold">No active plan</div>
+              <div className="text-sm text-muted-foreground">
+                Choose a plan to get started.
+              </div>
             </div>
             <Button variant="outline">Change plan</Button>
           </div>
@@ -53,12 +57,16 @@ function Billing() {
           </div>
         </Card>
         <Card className="glass p-6">
-          <div className="text-xs uppercase text-muted-foreground">Payment method</div>
+          <div className="text-xs uppercase text-muted-foreground">
+            Payment method
+          </div>
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-border/60 p-3">
             <CreditCard className="h-5 w-5 text-primary" />
             <div className="text-sm">
               <div className="font-medium">No payment method</div>
-              <div className="text-xs text-muted-foreground">Add a payment method to upgrade.</div>
+              <div className="text-xs text-muted-foreground">
+                Add a payment method to upgrade.
+              </div>
             </div>
           </div>
           <Button variant="outline" className="mt-3 w-full">
@@ -80,7 +88,9 @@ function Billing() {
           </thead>
           <tbody>
             <tr className="border-b border-border/40">
-              <td className="p-3 text-muted-foreground" colSpan={4}>No invoices yet</td>
+              <td className="p-3 text-muted-foreground" colSpan={4}>
+                No invoices yet
+              </td>
             </tr>
           </tbody>
         </table>

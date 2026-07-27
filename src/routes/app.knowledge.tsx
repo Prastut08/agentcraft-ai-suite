@@ -49,23 +49,24 @@ export const Route = createFileRoute("/app/knowledge")({
   component: KB,
 });
 
-const statusCfg: Record<string, { label: string; badge: string; dot: string }> = {
-  Embedded: {
-    label: "Embedded",
-    badge: "bg-success/12 text-success border-success/20",
-    dot: "bg-success",
-  },
-  Processing: {
-    label: "Processing",
-    badge: "bg-warning/12 text-warning border-warning/20",
-    dot: "bg-warning",
-  },
-  Error: {
-    label: "Error",
-    badge: "bg-destructive/12 text-destructive border-destructive/20",
-    dot: "bg-destructive",
-  },
-};
+const statusCfg: Record<string, { label: string; badge: string; dot: string }> =
+  {
+    Embedded: {
+      label: "Embedded",
+      badge: "bg-success/12 text-success border-success/20",
+      dot: "bg-success",
+    },
+    Processing: {
+      label: "Processing",
+      badge: "bg-warning/12 text-warning border-warning/20",
+      dot: "bg-warning",
+    },
+    Error: {
+      label: "Error",
+      badge: "bg-destructive/12 text-destructive border-destructive/20",
+      dot: "bg-destructive",
+    },
+  };
 
 const getDocIconAndColor = (type: string) => {
   switch (type.toUpperCase()) {
@@ -104,7 +105,9 @@ function KB() {
   const [search, setSearch] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [docType, setDocType] = useState<"PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT">("URL");
+  const [docType, setDocType] = useState<
+    "PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT"
+  >("URL");
   const [docName, setDocName] = useState("");
   const [docContent, setDocContent] = useState("");
   const [savingDoc, setSavingDoc] = useState(false);
@@ -124,7 +127,7 @@ function KB() {
       (err) => {
         console.error("Failed to load knowledge", err);
         setLoading(false);
-      }
+      },
     );
     return unsubscribe;
   }, [user]);
@@ -145,7 +148,8 @@ function KB() {
         id: newDocRef.id,
         n: docName.trim(),
         type: docType,
-        size: docType === "URL" ? "1 page" : docType === "FAQ" ? "Q&A" : "12 KB",
+        size:
+          docType === "URL" ? "1 page" : docType === "FAQ" ? "Q&A" : "12 KB",
         status: "Embedded",
         chunks: docType === "FAQ" ? 1 : Math.floor(Math.random() * 10) + 1,
         updated: "Just now",
@@ -173,7 +177,9 @@ function KB() {
     }
   };
 
-  const filtered = docs.filter((d) => d.n.toLowerCase().includes(search.toLowerCase()));
+  const filtered = docs.filter((d) =>
+    d.n.toLowerCase().includes(search.toLowerCase()),
+  );
   const totalChunks = docs.reduce((sum, d) => sum + (d.chunks || 0), 0);
   const embeddedCount = docs.filter((d) => d.status === "Embedded").length;
 
@@ -183,15 +189,26 @@ function KB() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Knowledge Base</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {docs.length} source{docs.length !== 1 ? "s" : ""} · {totalChunks} chunks · {docs.length > 0 ? `${embeddedCount} embedded` : "No data yet"}
+            {docs.length} source{docs.length !== 1 ? "s" : ""} · {totalChunks}{" "}
+            chunks ·{" "}
+            {docs.length > 0 ? `${embeddedCount} embedded` : "No data yet"}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="border-border/60" onClick={() => handleOpenDialog("FAQ")}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border/60"
+            onClick={() => handleOpenDialog("FAQ")}
+          >
             <Plus className="mr-2 h-3.5 w-3.5" />
             Add Q&A
           </Button>
-          <Button size="sm" className="bg-primary text-primary-foreground font-medium shadow-md" onClick={() => handleOpenDialog("PDF")}>
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground font-medium shadow-md"
+            onClick={() => handleOpenDialog("PDF")}
+          >
             <Upload className="mr-2 h-3.5 w-3.5" />
             Upload Document
           </Button>
@@ -200,10 +217,30 @@ function KB() {
 
       <div className="grid gap-4 md:grid-cols-4">
         {[
-          { label: "Total Sources", value: docs.length.toString(), icon: Database, color: "primary" },
-          { label: "Embedding Health", value: docs.length > 0 ? `${embeddedCount}/${docs.length} ok` : "—", icon: CheckCircle2, color: "success" },
-          { label: "Total Chunks", value: totalChunks.toString(), icon: Cpu, color: "accent" },
-          { label: "Last Re-trained", value: docs.length > 0 ? "Just now" : "Never", icon: Clock, color: "muted" },
+          {
+            label: "Total Sources",
+            value: docs.length.toString(),
+            icon: Database,
+            color: "primary",
+          },
+          {
+            label: "Embedding Health",
+            value: docs.length > 0 ? `${embeddedCount}/${docs.length} ok` : "—",
+            icon: CheckCircle2,
+            color: "success",
+          },
+          {
+            label: "Total Chunks",
+            value: totalChunks.toString(),
+            icon: Cpu,
+            color: "accent",
+          },
+          {
+            label: "Last Re-trained",
+            value: docs.length > 0 ? "Just now" : "Never",
+            icon: Clock,
+            color: "muted",
+          },
         ].map((s) => (
           <Card key={s.label} className="glass p-5">
             <div className="flex items-center gap-2">
@@ -260,14 +297,29 @@ function KB() {
             PDF, DOCX, TXT, CSV, XLSX · up to 50 MB per file
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <Button variant="outline" size="sm" className="border-border/60" onClick={() => handleOpenDialog("PDF")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border/60"
+              onClick={() => handleOpenDialog("PDF")}
+            >
               Browse Files
             </Button>
-            <Button variant="outline" size="sm" className="border-border/60" onClick={() => handleOpenDialog("URL")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border/60"
+              onClick={() => handleOpenDialog("URL")}
+            >
               <Globe className="mr-2 h-3.5 w-3.5" />
               Import URL
             </Button>
-            <Button variant="outline" size="sm" className="border-border/60" onClick={() => handleOpenDialog("TXT")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border/60"
+              onClick={() => handleOpenDialog("TXT")}
+            >
               <Plus className="mr-2 h-3.5 w-3.5" />
               Paste Text
             </Button>
@@ -286,7 +338,11 @@ function KB() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" className="border-border/60 ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border/60 ml-auto"
+          >
             <Filter className="mr-2 h-3.5 w-3.5" />
             Filter
           </Button>
@@ -308,7 +364,9 @@ function KB() {
         {loading ? (
           <div className="flex justify-center items-center py-12 gap-2">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <span className="text-sm text-muted-foreground">Loading knowledge base...</span>
+            <span className="text-sm text-muted-foreground">
+              Loading knowledge base...
+            </span>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 px-5 py-12 text-center">
@@ -316,7 +374,9 @@ function KB() {
               <FileText className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-muted-foreground">No documents uploaded yet</div>
+              <div className="text-sm font-semibold text-muted-foreground">
+                No documents uploaded yet
+              </div>
               <p className="mt-1 text-xs text-muted-foreground/70">
                 Upload your first document to get started.
               </p>
@@ -332,7 +392,9 @@ function KB() {
                   key={d.id}
                   className="group grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 px-5 py-4 transition hover:bg-muted/20"
                 >
-                  <div className={`grid h-10 w-10 place-items-center rounded-xl ${color}`}>
+                  <div
+                    className={`grid h-10 w-10 place-items-center rounded-xl ${color}`}
+                  >
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
@@ -347,13 +409,21 @@ function KB() {
                     </div>
                   </div>
                   <div className="w-24 text-center">
-                    <span className="text-sm font-semibold">{d.chunks || "—"}</span>
-                    {d.chunks > 0 && <div className="text-[10px] text-muted-foreground">chunks</div>}
+                    <span className="text-sm font-semibold">
+                      {d.chunks || "—"}
+                    </span>
+                    {d.chunks > 0 && (
+                      <div className="text-[10px] text-muted-foreground">
+                        chunks
+                      </div>
+                    )}
                   </div>
                   <div className="w-20">
                     {d.confidence > 0 ? (
                       <div className="flex flex-col items-center gap-1">
-                        <span className="text-sm font-bold text-success">{d.confidence}%</span>
+                        <span className="text-sm font-bold text-success">
+                          {d.confidence}%
+                        </span>
                         <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
                           <div
                             className="h-full rounded-full bg-success"
@@ -409,9 +479,12 @@ function KB() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold">Knowledge Gaps Detected</div>
+              <div className="text-sm font-semibold">
+                Knowledge Gaps Detected
+              </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Gap analysis will appear here after your agents handle calls and unanswered questions are detected.
+                Gap analysis will appear here after your agents handle calls and
+                unanswered questions are detected.
               </p>
             </div>
             <Button
@@ -437,7 +510,12 @@ function KB() {
               <select
                 id="docType"
                 value={docType}
-                onChange={(e) => setDocType(e.target.value as any)}
+                onChange={(e) =>
+                  setDocType(
+                    e.target.value as
+                      "PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT",
+                  )
+                }
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
               >
                 <option value="PDF">PDF File</option>
@@ -472,7 +550,9 @@ function KB() {
             {(docType === "TXT" || docType === "FAQ") && (
               <div className="space-y-1">
                 <Label htmlFor="docContent">
-                  {docType === "FAQ" ? "Q&A Content (Question & Answer)" : "Text Content"}
+                  {docType === "FAQ"
+                    ? "Q&A Content (Question & Answer)"
+                    : "Text Content"}
                 </Label>
                 <Textarea
                   id="docContent"
@@ -487,10 +567,14 @@ function KB() {
                 />
               </div>
             )}
-            {(docType === "PDF" || docType === "DOCX" || docType === "XLSX") && (
+            {(docType === "PDF" ||
+              docType === "DOCX" ||
+              docType === "XLSX") && (
               <div className="py-4 border-2 border-dashed border-border rounded-lg text-center bg-muted/20">
                 <Upload className="mx-auto h-6 w-6 text-muted-foreground mb-1" />
-                <span className="text-xs text-muted-foreground">Mock File Ready to Import</span>
+                <span className="text-xs text-muted-foreground">
+                  Mock File Ready to Import
+                </span>
               </div>
             )}
           </div>
@@ -498,7 +582,10 @@ function KB() {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddDoc} disabled={savingDoc || !docName.trim()}>
+            <Button
+              onClick={handleAddDoc}
+              disabled={savingDoc || !docName.trim()}
+            >
               {savingDoc ? "Adding..." : "Add to Knowledge"}
             </Button>
           </DialogFooter>

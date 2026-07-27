@@ -67,7 +67,7 @@ function Settings() {
             address: form.address,
           },
         },
-        { merge: true }
+        { merge: true },
       );
       toast.success("Business profile saved successfully!");
     } catch (err) {
@@ -103,14 +103,18 @@ function Settings() {
               <F label="Business name">
                 <Input
                   value={form.businessName}
-                  onChange={(e) => setForm({ ...form, businessName: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, businessName: e.target.value })
+                  }
                   placeholder="E.g., Bright Dental"
                 />
               </F>
               <F label="Website">
                 <Input
                   value={form.website}
-                  onChange={(e) => setForm({ ...form, website: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, website: e.target.value })
+                  }
                   placeholder="https://example.com"
                 />
               </F>
@@ -132,7 +136,9 @@ function Settings() {
                 <F label="Address">
                   <Input
                     value={form.address}
-                    onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, address: e.target.value })
+                    }
                     placeholder="123 Main St, City, State"
                   />
                 </F>
@@ -192,21 +198,27 @@ function Settings() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">Two-factor auth</div>
-                <div className="text-xs text-muted-foreground">Require 2FA for all admins</div>
+                <div className="text-xs text-muted-foreground">
+                  Require 2FA for all admins
+                </div>
               </div>
               <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">SSO / SAML</div>
-                <div className="text-xs text-muted-foreground">Enterprise plan only</div>
+                <div className="text-xs text-muted-foreground">
+                  Enterprise plan only
+                </div>
               </div>
               <Switch />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">Session timeout</div>
-                <div className="text-xs text-muted-foreground">Auto sign-out after 30 min</div>
+                <div className="text-xs text-muted-foreground">
+                  Auto sign-out after 30 min
+                </div>
               </div>
               <Switch defaultChecked />
             </div>

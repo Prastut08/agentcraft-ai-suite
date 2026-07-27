@@ -1,6 +1,21 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode, useRef } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+  useRef,
+} from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, Loader2, Lock, Shield, Sparkles, Waves } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+  Lock,
+  Shield,
+  Sparkles,
+  Waves,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,7 +102,9 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
       navigate({ to: "/onboarding/agent-type", replace: true });
     } catch (demoError) {
       const message =
-        demoError instanceof Error ? demoError.message : "Unable to start demo session.";
+        demoError instanceof Error
+          ? demoError.message
+          : "Unable to start demo session.";
       setError(message);
     } finally {
       setBusy(false);
@@ -99,7 +116,9 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
       <div className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
         <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-surface/70 px-5 py-4 shadow-xl backdrop-blur">
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          <span className="text-sm text-muted-foreground">Checking your session...</span>
+          <span className="text-sm text-muted-foreground">
+            Checking your session...
+          </span>
         </div>
       </div>
     );
@@ -124,7 +143,9 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
             </div>
             <div>
               <div className="text-sm font-semibold">VoiceForge AI</div>
-              <div className="text-xs text-muted-foreground">Secure access required</div>
+              <div className="text-xs text-muted-foreground">
+                Secure access required
+              </div>
             </div>
           </div>
 
@@ -133,9 +154,12 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
               variant="secondary"
               className="rounded-full border border-border px-3 py-1 text-xs"
             >
-              <Shield className="mr-1.5 h-3 w-3 text-primary" /> Firebase Auth + Firestore
+              <Shield className="mr-1.5 h-3 w-3 text-primary" /> Firebase Auth +
+              Firestore
             </Badge>
-            <h1 className="text-5xl font-bold tracking-tight md:text-7xl">{primaryCopy}</h1>
+            <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
+              {primaryCopy}
+            </h1>
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
               {reason ??
                 "Use your workspace account to sign in or create a new account before opening the dashboard."}
@@ -150,14 +174,19 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
             ].map((stat) => (
               <Card key={stat.label} className="glass p-4">
                 <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-sm text-muted-foreground">
+                  {stat.label}
+                </div>
               </Card>
             ))}
           </div>
 
           <div className="space-y-3">
             {highlights.map((item) => (
-              <div key={item} className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div
+                key={item}
+                className="flex items-center gap-3 text-sm text-muted-foreground"
+              >
                 <div className="grid h-6 w-6 place-items-center rounded-full bg-primary/10 text-primary">
                   <Check className="h-3.5 w-3.5" />
                 </div>
@@ -174,9 +203,12 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
               <div className="flex items-center gap-2 text-sm font-medium text-primary">
                 <Lock className="h-4 w-4" /> Workspace access
               </div>
-              <h2 className="mt-2 text-2xl font-bold">Sign in or create an account</h2>
+              <h2 className="mt-2 text-2xl font-bold">
+                Sign in or create an account
+              </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                One account unlocks the dashboard, agents, logs, and Firestore-backed profile data.
+                One account unlocks the dashboard, agents, logs, and
+                Firestore-backed profile data.
               </p>
             </div>
 
@@ -191,7 +223,11 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
               </TabsList>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <TabsContent value="sign-in" forceMount className="mt-0 space-y-4">
+                <TabsContent
+                  value="sign-in"
+                  forceMount
+                  className="mt-0 space-y-4"
+                >
                   <Field label="Email address">
                     <Input
                       autoComplete="email"
@@ -211,7 +247,11 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
                   </Field>
                 </TabsContent>
 
-                <TabsContent value="sign-up" forceMount className="mt-0 space-y-4">
+                <TabsContent
+                  value="sign-up"
+                  forceMount
+                  className="mt-0 space-y-4"
+                >
                   <Field label="Business name">
                     <Input
                       autoComplete="organization"
@@ -283,7 +323,8 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
             <Separator />
 
             <p className="text-center text-xs text-muted-foreground">
-              By continuing you agree to use the workspace with your Firebase authenticated account.
+              By continuing you agree to use the workspace with your Firebase
+              authenticated account.
             </p>
           </div>
         </Card>
@@ -295,7 +336,9 @@ export function AuthScreen({ compact = false, reason }: AuthScreenProps) {
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
-      <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+      <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );
