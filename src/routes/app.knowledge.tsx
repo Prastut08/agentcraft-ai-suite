@@ -616,23 +616,18 @@ function KB() {
             )}
             <div className="space-y-1">
               <Label>Select File</Label>
-              <input
-                id="kb-file-input"
-                type="file"
-                className="absolute h-0 w-0 overflow-hidden opacity-0 pointer-events-none"
-                onChange={(e) => {
-                  const file = e.target.files?.[0] || null;
-                  setSelectedFile(file);
-                  if (file) setDocName(file.name);
-                }}
-              />
-              <label
-                htmlFor="kb-file-input"
-                className="flex w-full cursor-pointer items-center gap-2 rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground ring-offset-background transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <Paperclip className="h-3.5 w-3.5" />
-                {selectedFile ? selectedFile.name : "Choose File"}
-              </label>
+              <div className="flex w-full items-center gap-2">
+                <input
+                  id="kb-file-input"
+                  type="file"
+                  className="block w-full cursor-pointer rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary/12 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setSelectedFile(file);
+                    if (file) setDocName(file.name);
+                  }}
+                />
+              </div>
               {selectedFile && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <HardDrive className="h-3 w-3" />
