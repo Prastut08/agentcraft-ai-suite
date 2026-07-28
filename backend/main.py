@@ -10,7 +10,7 @@ from loguru import logger
 from backend.config import settings  # pyright: ignore[reportMissingImports]
 from backend.core.logging import setup_logging  # pyright: ignore[reportMissingImports]
 from backend.middleware.auth import AuthMiddleware  # pyright: ignore[reportMissingImports]
-from backend.routers import tools, vapi  # pyright: ignore[reportMissingImports]
+from backend.routers import dedup, tools, vapi  # pyright: ignore[reportMissingImports]
 
 setup_logging(settings.LOG_LEVEL)
 
@@ -66,6 +66,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(vapi.router, prefix="/api/vapi", tags=["vapi"])
+app.include_router(dedup.router, prefix="/api/dedup", tags=["dedup"])
 app.include_router(tools.router, prefix="/api/tools", tags=["tools"])
 
 

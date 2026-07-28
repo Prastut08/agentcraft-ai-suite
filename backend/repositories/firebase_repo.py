@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from datetime import datetime
 from typing import Any, Optional
 
@@ -140,3 +141,43 @@ class FirebaseRepository:
             }
         )
         return doc_ref.id
+
+    async def remove_duplicates(
+        self,
+        collection_name: str,
+        dedup_keys: list[str],
+    ) -> dict[str, Any]:
+        docs = list(self._col(collection_name).stream())
+        groups: dict[str, list[str]] = defaultdict(list)
+        for doc in docs:
+            data = doc.to_dict() or {}
+            key = tuple(data.get(k) for k in dedup_keys)
+            groups[key].append(doc.id)
+
+        total_removed = 0
+        removed_per_group: list[dict[str, Any]] = []
+        for key, doc_ids in groups.items():
+            if len(doc_ids) <= 1:
+                continue
+            keeper = doc_ids[0]
+            for duplicate_id in doc_ids[1:]:
+                self._col(collection_name).document(duplicate_id).delete()
+                total_removed += 1
+            removed_per_group.append(
+                {
+                    "key": {k: v for k, v in zip(dedup_keys, key)},
+                    "kept": keeper,
+                    "removed": doc_ids[1:],
+                }
+            )
+
+        result: dict[str, Any] = {
+            "collection": collection_name,
+            "dedup_keys": dedup_keys,
+            "total_documents": len(docs),
+            "duplicate_groups": len(removed_per_group),
+            "total_removed": total_removed,
+            "details": removed_per_group,
+        }
+        logger.info("Dedup result for %s: %d removed", collection_name, total_removed)
+        return result
