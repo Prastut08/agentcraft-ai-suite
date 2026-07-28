@@ -513,7 +513,6 @@ function CreateWizard() {
       };
 
       try {
-        await setDoc(doc(db, "users", user.uid), payload, { merge: true });
         await setDoc(
           doc(db, "users", user.uid, "createAgentDrafts", "current"),
           {
@@ -585,16 +584,6 @@ function CreateWizard() {
 
     setSavingDraft(true);
     try {
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          businessName: nextBusinessName,
-          businessInfo: draft.sections.businessInfo,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
-
       await setDoc(
         doc(db, "users", user.uid, "createAgentDrafts", "current"),
         draft,
