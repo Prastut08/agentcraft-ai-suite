@@ -172,6 +172,25 @@ function KB() {
         fileType = ext && ["PDF", "DOCX", "XLSX", "TXT", "CSV", "PNG", "JPG", "JPEG", "MP3", "MP4", "ZIP", "JSON", "HTML", "CSS", "JS", "PY", "MD"].includes(ext)
           ? ext
           : "FILE";
+
+        try {
+          const processResp = await fetch("/api/knowledge/groq/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              file_url: fileUrl,
+              file_name: selectedFile.name,
+              doc_id: newDocRef.id,
+              user_id: user.uid,
+            }),
+          });
+          if (!processResp.ok) {
+            console.warn("Groq processing returned non-OK status", processResp.status);
+          }
+        } catch (gerr) {
+          console.error("Groq processing failed:", gerr);
+          toast.warning("File uploaded but Groq processing failed. You can retry later.");
+        }
       }
 
       const newDocRef = doc(collection(db, "users", user.uid, "knowledge"));
