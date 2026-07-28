@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,10 +32,11 @@ import {
   Cpu,
   Clock,
   Sparkles,
+  Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import {
   collection,
   doc,
@@ -44,6 +45,11 @@ import {
   serverTimestamp,
   onSnapshot,
 } from "firebase/firestore";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 
 export const Route = createFileRoute("/app/knowledge")({
   component: KB,
@@ -99,6 +105,7 @@ interface Doc {
 
 function KB() {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [dragging, setDragging] = useState(false);
@@ -106,10 +113,11 @@ function KB() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [docType, setDocType] = useState<
-    "PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT"
+    "PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT" | "FILE"
   >("URL");
   const [docName, setDocName] = useState("");
   const [docContent, setDocContent] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [savingDoc, setSavingDoc] = useState(false);
 
   useEffect(() => {
@@ -136,31 +144,54 @@ function KB() {
     setDocType(type);
     setDocName("");
     setDocContent("");
+    setSelectedFile(null);
     setDialogOpen(true);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const handleAddDoc = async () => {
     if (!user || !docName.trim()) return;
     setSavingDoc(true);
     try {
+      let fileUrl: string | undefined;
+      let fileSize = "0 B";
+      let fileType = docType;
+
+      if (selectedFile) {
+        const filePath = `knowledge/${user.uid}/${Date.now()}_${selectedFile.name}`;
+        const storageRef = ref(storage, filePath);
+        await uploadBytes(storageRef, selectedFile);
+        fileUrl = await getDownloadURL(storageRef);
+        fileSize = formatFileSize(selectedFile.size);
+        const ext = selectedFile.name.split(".").pop()?.toUpperCase();
+        fileType = ext && ["PDF", "DOCX", "XLSX", "TXT", "CSV", "PNG", "JPG", "JPEG", "MP3", "MP4", "ZIP", "JSON", "HTML", "CSS", "JS", "PY", "MD"].includes(ext)
+          ? ext
+          : "FILE";
+      }
+
       const newDocRef = doc(collection(db, "users", user.uid, "knowledge"));
       await setDoc(newDocRef, {
         id: newDocRef.id,
         n: docName.trim(),
-        type: docType,
-        size:
-          docType === "URL" ? "1 page" : docType === "FAQ" ? "Q&A" : "12 KB",
+        type: fileType,
+        size: fileSize,
         status: "Embedded",
-        chunks: docType === "FAQ" ? 1 : Math.floor(Math.random() * 10) + 1,
+        chunks: 1,
         updated: "Just now",
         confidence: 99,
+        fileUrl,
         createdAt: serverTimestamp(),
       });
-      toast.success("Document added to knowledge base successfully!");
+      toast.success("Document uploaded to knowledge base successfully!");
       setDialogOpen(false);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to add document.");
+      toast.error("Failed to upload document.");
     } finally {
       setSavingDoc(false);
     }
@@ -207,10 +238,10 @@ function KB() {
           <Button
             size="sm"
             className="bg-primary text-primary-foreground font-medium shadow-md"
-            onClick={() => handleOpenDialog("PDF")}
+            onClick={() => handleOpenDialog("FILE")}
           >
             <Upload className="mr-2 h-3.5 w-3.5" />
-            Upload Document
+            Upload File
           </Button>
         </div>
       </div>
@@ -277,7 +308,7 @@ function KB() {
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          handleOpenDialog("PDF");
+          handleOpenDialog("FILE");
         }}
         className={`relative overflow-hidden rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ${
           dragging
@@ -294,14 +325,14 @@ function KB() {
             {dragging ? "Drop to upload" : "Drag & drop files here"}
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            PDF, DOCX, TXT, CSV, XLSX · up to 50 MB per file
+            All file types · up to 50 MB per file
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               className="border-border/60"
-              onClick={() => handleOpenDialog("PDF")}
+              onClick={() => handleOpenDialog("FILE")}
             >
               Browse Files
             </Button>
@@ -513,14 +544,12 @@ function KB() {
                 onChange={(e) =>
                   setDocType(
                     e.target.value as
-                      "PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT",
+                      "PDF" | "DOCX" | "XLSX" | "URL" | "FAQ" | "TXT" | "FILE",
                   )
                 }
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
               >
-                <option value="PDF">PDF File</option>
-                <option value="DOCX">Word Document (DOCX)</option>
-                <option value="XLSX">Spreadsheet (XLSX)</option>
+                <option value="FILE">Any File</option>
                 <option value="URL">Website URL</option>
                 <option value="FAQ">FAQ Q&A</option>
                 <option value="TXT">Plain Text</option>
@@ -567,16 +596,34 @@ function KB() {
                 />
               </div>
             )}
-            {(docType === "PDF" ||
-              docType === "DOCX" ||
-              docType === "XLSX") && (
-              <div className="py-4 border-2 border-dashed border-border rounded-lg text-center bg-muted/20">
-                <Upload className="mx-auto h-6 w-6 text-muted-foreground mb-1" />
-                <span className="text-xs text-muted-foreground">
-                  Mock File Ready to Import
-                </span>
-              </div>
-            )}
+            <div className="space-y-1">
+              <Label>Select File</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setSelectedFile(file);
+                  if (file) setDocName(file.name);
+                }}
+              />
+              <Button
+                variant="outline"
+                className="w-full border-border/60"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Paperclip className="mr-2 h-3.5 w-3.5" />
+                {selectedFile ? selectedFile.name : "Choose File"}
+              </Button>
+              {selectedFile && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <HardDrive className="h-3 w-3" />
+                  {formatFileSize(selectedFile.size)} ·{" "}
+                  {selectedFile.type || "Any type"}
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
