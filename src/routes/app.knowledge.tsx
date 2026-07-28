@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,7 +105,6 @@ interface Doc {
 
 function KB() {
   const { user } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [dragging, setDragging] = useState(false);
@@ -618,23 +617,22 @@ function KB() {
             <div className="space-y-1">
               <Label>Select File</Label>
               <input
-                ref={fileInputRef}
+                id="kb-file-input"
                 type="file"
-                className="hidden"
+                className="absolute h-0 w-0 overflow-hidden opacity-0 pointer-events-none"
                 onChange={(e) => {
                   const file = e.target.files?.[0] || null;
                   setSelectedFile(file);
                   if (file) setDocName(file.name);
                 }}
               />
-              <Button
-                variant="outline"
-                className="w-full border-border/60"
-                onClick={() => fileInputRef.current?.click()}
+              <label
+                htmlFor="kb-file-input"
+                className="flex w-full cursor-pointer items-center gap-2 rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground ring-offset-background transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Paperclip className="mr-2 h-3.5 w-3.5" />
+                <Paperclip className="h-3.5 w-3.5" />
                 {selectedFile ? selectedFile.name : "Choose File"}
-              </Button>
+              </label>
               {selectedFile && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <HardDrive className="h-3 w-3" />
