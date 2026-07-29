@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,7 @@ import {
   Cpu,
   Clock,
   Sparkles,
+  Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -104,6 +105,7 @@ interface Doc {
 
 function KB() {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [dragging, setDragging] = useState(false);
@@ -617,11 +619,12 @@ function KB() {
             <div className="space-y-1">
               <Label>Select Files</Label>
               <input
+                ref={fileInputRef}
                 id="kb-file-input"
                 type="file"
                 multiple
                 accept=".jpg,.jpeg,.png,.webp,.pdf,.txt,.md,.ppt,.pptx,image/jpeg,image/png,image/webp,application/pdf,text/plain,text/markdown,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                className="block w-full cursor-pointer rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground"
+                className="hidden"
                 onChange={(e) => {
                   const files = e.target.files;
                   if (files && files.length > 0) {
@@ -634,19 +637,24 @@ function KB() {
                   }
                 }}
               />
+              <Button
+                variant="outline"
+                className="w-full border-border/60"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Paperclip className="mr-2 h-3.5 w-3.5" />
+                {selectedFiles.length > 0
+                  ? `${selectedFiles.length} file(s) selected`
+                  : "Browse Files"}
+              </Button>
               {selectedFiles.length > 0 && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <HardDrive className="h-3 w-3" />
                   {selectedFiles.length} file
-                  {selectedFiles.length !== 1 ? "s" : ""} selected ·{" "}
-                  {selectedFiles.reduce(
-                    (acc, f) => acc + f.size,
-                    0,
-                  ) === 0
-                    ? ""
-                    : formatFileSize(
-                        selectedFiles.reduce((acc, f) => acc + f.size, 0),
-                      )}
+                  {selectedFiles.length !== 1 ? "s" : ""} ·{" "}
+                  {formatFileSize(
+                    selectedFiles.reduce((acc, f) => acc + f.size, 0),
+                  )}
                 </div>
               )}
             </div>
