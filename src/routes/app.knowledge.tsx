@@ -32,7 +32,6 @@ import {
   Cpu,
   Clock,
   Sparkles,
-  Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -116,7 +115,7 @@ function KB() {
   >("URL");
   const [docName, setDocName] = useState("");
   const [docContent, setDocContent] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [savingDoc, setSavingDoc] = useState(false);
 
   useEffect(() => {
@@ -143,7 +142,7 @@ function KB() {
     setDocType(type);
     setDocName("");
     setDocContent("");
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setDialogOpen(true);
   };
 
@@ -157,56 +156,57 @@ function KB() {
     if (!user || !docName.trim()) return;
     setSavingDoc(true);
     try {
-      let fileUrl: string | undefined;
-      let fileSize = "0 B";
-      let fileType = docType;
-
-      if (selectedFile) {
-        const filePath = `knowledge/${user.uid}/${Date.now()}_${selectedFile.name}`;
+      if (selectedFiles.length === 0) {
+        toast.error("Please select at least one file.");
+        setSavingDoc(false);
+        return;
+      }
+      for (const file of selectedFiles) {
+        const filePath = `knowledge/${user.uid}/${Date.now()}_${file.name}`;
         const storageRef = ref(storage, filePath);
-        await uploadBytes(storageRef, selectedFile);
-        fileUrl = await getDownloadURL(storageRef);
-        fileSize = formatFileSize(selectedFile.size);
-        const ext = selectedFile.name.split(".").pop()?.toUpperCase();
-        fileType = ext && ["PDF", "DOCX", "XLSX", "TXT", "CSV", "PNG", "JPG", "JPEG", "MP3", "MP4", "ZIP", "JSON", "HTML", "CSS", "JS", "PY", "MD"].includes(ext)
+        await uploadBytes(storageRef, file);
+        const fileUrl = await getDownloadURL(storageRef);
+        const fileSize = formatFileSize(file.size);
+        const ext = file.name.split(".").pop()?.toUpperCase();
+        const fileType = ext && ["PDF", "DOCX", "XLSX", "TXT", "CSV", "PNG", "JPG", "JPEG", "MP3", "MP4", "ZIP", "JSON", "HTML", "CSS", "JS", "PY", "MD", "PPT", "PPTX", "WEBP"].includes(ext)
           ? ext
           : "FILE";
 
         try {
-          const processResp = await fetch("/api/knowledge/groq/process", {
+          await fetch("/api/knowledge/groq/process", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               file_url: fileUrl,
-              file_name: selectedFile.name,
-              doc_id: newDocRef.id,
+              file_name: file.name,
+              doc_id: "",
               user_id: user.uid,
             }),
           });
-          if (!processResp.ok) {
-            console.warn("Groq processing returned non-OK status", processResp.status);
-          }
         } catch (gerr) {
           console.error("Groq processing failed:", gerr);
-          toast.warning("File uploaded but Groq processing failed. You can retry later.");
         }
-      }
 
-      const newDocRef = doc(collection(db, "users", user.uid, "knowledge"));
-      await setDoc(newDocRef, {
-        id: newDocRef.id,
-        n: docName.trim(),
-        type: fileType,
-        size: fileSize,
-        status: "Embedded",
-        chunks: 1,
-        updated: "Just now",
-        confidence: 99,
-        fileUrl,
-        createdAt: serverTimestamp(),
-      });
-      toast.success("Document uploaded to knowledge base successfully!");
+        const newDocRef = doc(collection(db, "users", user.uid, "knowledge"));
+        await setDoc(newDocRef, {
+          id: newDocRef.id,
+          n: docName.trim() || file.name,
+          type: fileType,
+          size: fileSize,
+          status: "Processing",
+          chunks: 0,
+          updated: "Just now",
+          confidence: 0,
+          fileUrl,
+          createdAt: serverTimestamp(),
+        });
+      }
+      toast.success(
+        `${selectedFiles.length} file(s) uploaded to knowledge base!`,
+      );
       setDialogOpen(false);
+      setSelectedFiles([]);
+      setDocName("");
     } catch (err) {
       console.error(err);
       toast.error("Failed to upload document.");
@@ -615,24 +615,38 @@ function KB() {
               </div>
             )}
             <div className="space-y-1">
-              <Label>Select File</Label>
-              <div className="flex w-full items-center gap-2">
-                <input
-                  id="kb-file-input"
-                  type="file"
-                  className="block w-full cursor-pointer rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary/12 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setSelectedFile(file);
-                    if (file) setDocName(file.name);
-                  }}
-                />
-              </div>
-              {selectedFile && (
+              <Label>Select Files</Label>
+              <input
+                id="kb-file-input"
+                type="file"
+                multiple
+                accept=".jpg,.jpeg,.png,.webp,.pdf,.txt,.md,.ppt,.pptx,image/jpeg,image/png,image/webp,application/pdf,text/plain,text/markdown,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                className="block w-full cursor-pointer rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground"
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files && files.length > 0) {
+                    setSelectedFiles(Array.from(files));
+                    setDocName(
+                      files.length === 1
+                        ? files[0].name
+                        : `${files.length} files selected`,
+                    );
+                  }
+                }}
+              />
+              {selectedFiles.length > 0 && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <HardDrive className="h-3 w-3" />
-                  {formatFileSize(selectedFile.size)} ·{" "}
-                  {selectedFile.type || "Any type"}
+                  {selectedFiles.length} file
+                  {selectedFiles.length !== 1 ? "s" : ""} selected ·{" "}
+                  {selectedFiles.reduce(
+                    (acc, f) => acc + f.size,
+                    0,
+                  ) === 0
+                    ? ""
+                    : formatFileSize(
+                        selectedFiles.reduce((acc, f) => acc + f.size, 0),
+                      )}
                 </div>
               )}
             </div>
